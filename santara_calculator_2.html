@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>سنترة | حاسبة تسعير التوصيل بين مناطق عمّان</title>
+<style>
+  :root{
+    --navy:#0F2A5C;
+    --navy-dark:#0A1D40;
+    --blue:#1B4CA8;
+    --orange:#F5821F;
+    --orange-dark:#D96C0F;
+    --bg:#F4F6FB;
+    --card:#FFFFFF;
+    --border:#E1E6F0;
+    --text:#1A2233;
+    --muted:#6B7488;
+    --good:#1E8A5B;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Tajawal','Cairo','Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    line-height:1.6;
+  }
+  header{
+    background:linear-gradient(135deg,var(--navy) 0%,var(--navy-dark) 100%);
+    color:#fff;
+    padding:28px 20px 90px;
+    position:relative;
+    text-align:center;
+  }
+  .logo-mark{
+    width:56px;height:56px;border-radius:16px;
+    background:var(--blue);
+    display:inline-flex;align-items:center;justify-content:center;
+    margin-bottom:12px;
+    position:relative;
+  }
+  .logo-mark svg{width:30px;height:30px;}
+  header h1{margin:0;font-size:22px;font-weight:800;}
+  header p{margin:6px 0 0;color:#C9D5F0;font-size:14px;}
+
+  .wrap{
+    max-width:1080px;
+    margin:-60px auto 40px;
+    padding:0 16px;
+  }
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:16px;
+    box-shadow:0 8px 24px rgba(15,42,92,0.08);
+    padding:22px;
+    margin-bottom:20px;
+  }
+  .card h2{
+    margin:0 0 14px;
+    font-size:16px;
+    font-weight:800;
+    color:var(--navy);
+    display:flex;align-items:center;gap:8px;
+  }
+  .card h2 .tag{
+    background:var(--orange);
+    color:#fff;
+    font-size:11px;
+    font-weight:700;
+    padding:2px 8px;
+    border-radius:100px;
+  }
+
+  .calc-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+  }
+  @media (max-width:640px){ .calc-grid{grid-template-columns:1fr;} }
+
+  label{
+    display:block;
+    font-size:13px;
+    font-weight:700;
+    color:var(--muted);
+    margin-bottom:6px;
+  }
+  select, input{
+    width:100%;
+    padding:11px 12px;
+    border-radius:10px;
+    border:1.5px solid var(--border);
+    font-size:15px;
+    font-family:inherit;
+    background:#fff;
+    color:var(--text);
+  }
+  select:focus, input:focus{
+    outline:none;
+    border-color:var(--blue);
+  }
+  optgroup{font-weight:700;}
+
+  .swap-btn{
+    display:flex;align-items:center;justify-content:center;
+    grid-column:1/-1;
+    margin-top:-4px;
+  }
+  .swap-btn button{
+    background:#fff;
+    border:1.5px solid var(--border);
+    color:var(--navy);
+    width:38px;height:38px;
+    border-radius:50%;
+    cursor:pointer;
+    font-size:16px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .swap-btn button:hover{border-color:var(--blue);}
+
+  .btn-primary{
+    background:var(--orange);
+    color:#fff;
+    border:none;
+    padding:13px 18px;
+    border-radius:10px;
+    font-size:15px;
+    font-weight:800;
+    cursor:pointer;
+    width:100%;
+    margin-top:16px;
+  }
+  .btn-primary:hover{background:var(--orange-dark);}
+
+  .result{
+    margin-top:18px;
+    padding:18px;
+    background:linear-gradient(135deg,#EEF3FF,#FBF0E6);
+    border:1.5px solid var(--border);
+    border-radius:14px;
+    display:none;
+  }
+  .result.show{display:block;}
+  .result .price{
+    font-size:34px;
+    font-weight:900;
+    color:var(--navy);
+  }
+  .result .price span{font-size:16px;color:var(--muted);font-weight:700;}
+  .result-details{
+    display:flex;
+    flex-wrap:wrap;
+    gap:20px;
+    margin-top:10px;
+    font-size:13px;
+    color:var(--muted);
+  }
+  .result-details b{color:var(--text);}
+
+  .params-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+    gap:14px;
+  }
+  @media (max-width:760px){ .params-grid{grid-template-columns:1fr 1fr;} }
+  .params-grid small{display:block;color:var(--muted);font-size:11px;margin-top:4px;}
+
+  .note{
+    font-size:12.5px;
+    color:var(--muted);
+    background:#F8F9FC;
+    border-radius:10px;
+    padding:12px 14px;
+    border:1px dashed var(--border);
+  }
+
+  table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:13.5px;
+  }
+  thead th{
+    background:var(--navy);
+    color:#fff;
+    padding:10px 8px;
+    text-align:center;
+    position:sticky;
+    top:0;
+  }
+  tbody td{
+    padding:8px;
+    text-align:center;
+    border-bottom:1px solid var(--border);
+  }
+  tbody tr:nth-child(even){background:#FAFBFE;}
+  .table-scroll{max-height:420px;overflow:auto;border:1px solid var(--border);border-radius:10px;}
+
+  .toolbar{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-bottom:14px;
+    align-items:end;
+  }
+  .toolbar .grow{flex:1;min-width:180px;}
+  .btn-secondary{
+    background:var(--navy);
+    color:#fff;
+    border:none;
+    padding:11px 16px;
+    border-radius:10px;
+    font-size:13.5px;
+    font-weight:700;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .btn-secondary:hover{background:var(--navy-dark);}
+  .btn-outline{
+    background:#fff;
+    color:var(--navy);
+    border:1.5px solid var(--border);
+    padding:10px 16px;
+    border-radius:10px;
+    font-size:13.5px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .btn-outline:hover{border-color:var(--blue);}
+
+  .badge{
+    display:inline-block;
+    background:#EAF0FF;
+    color:var(--blue);
+    font-size:11.5px;
+    font-weight:700;
+    padding:2px 8px;
+    border-radius:100px;
+  }
+  footer{
+    text-align:center;
+    color:var(--muted);
+    font-size:12px;
+    padding:20px;
+  }
+  .stat-row{
+    display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px;
+  }
+  .stat{
+    background:#F8F9FC;border:1px solid var(--border);border-radius:10px;
+    padding:10px 16px;font-size:13px;color:var(--muted);
+  }
+  .stat b{color:var(--navy);font-size:16px;display:block;}
+
+  .split-box{
+    margin-top:14px;
+    padding-top:14px;
+    border-top:1.5px dashed var(--border);
+    display:none;
+  }
+  .split-box.show{display:block;}
+  .split-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:8px 0;
+    font-size:14px;
+  }
+  .split-row .lbl{color:var(--muted);}
+  .split-row .val{font-weight:800;color:var(--navy);}
+  .split-row.commission .val{color:var(--orange-dark);}
+  .split-row.partner .val{color:var(--good);}
+  .split-warning{
+    background:#FDECEC;
+    color:#B3261E;
+    border:1px solid #F5C2C0;
+    border-radius:8px;
+    padding:8px 10px;
+    font-size:12.5px;
+    margin-top:8px;
+  }
+
+  .toggle-group{
+    display:inline-flex;
+    border:1.5px solid var(--border);
+    border-radius:10px;
+    overflow:hidden;
+  }
+  .toggle-btn{
+    border:none;
+    background:#fff;
+    color:var(--muted);
+    font-family:inherit;
+    font-size:13.5px;
+    font-weight:700;
+    padding:9px 16px;
+    cursor:pointer;
+  }
+  .toggle-btn + .toggle-btn{border-right:1.5px solid var(--border);}
+  .toggle-btn.active{
+    background:var(--navy);
+    color:#fff;
+  }
+  .commission-row{grid-column:1/-1;}
+  .commission-input-wrap{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-top:10px;
+    flex-wrap:wrap;
+  }
+  .commission-input-wrap input{max-width:160px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-mark">
+    <svg viewBox="0 0 24 24" fill="none">
+      <path d="M4 12 L10 18 L20 6" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+  <h1>سنترة — حاسبة تسعير التوصيل</h1>
+  <p>احسب سعر التوصيل بين أي منطقتين في عمّان بشكل فوري ودقيق</p>
+</header>
+
+<div class="wrap">
+
+  <!-- Calculator -->
+  <div class="card">
+    <h2>حاسبة السعر بين منطقتين <span class="tag">مباشر</span></h2>
+    <div class="calc-grid">
+      <div>
+        <label for="fromSelect">من (منطقة الاستلام)</label>
+        <select id="fromSelect"></select>
+      </div>
+      <div>
+        <label for="toSelect">إلى (منطقة التسليم)</label>
+        <select id="toSelect"></select>
+      </div>
+      <div class="swap-btn">
+        <button id="swapBtn" title="تبديل">⇅</button>
+      </div>
+    </div>
+    <button class="btn-primary" id="calcBtn">احسب السعر</button>
+
+    <div class="result" id="resultBox">
+      <div class="price" id="priceOut">-- <span>دينار أردني</span></div>
+      <div class="result-details">
+        <div>المسافة التقديرية: <b id="distOut">--</b> كم</div>
+        <div>من: <b id="fromAreaOut">--</b> <span style="color:var(--muted);">(نطاق <b id="fromZoneOut">--</b>)</span></div>
+        <div>إلى: <b id="toAreaOut">--</b> <span style="color:var(--muted);">(نطاق <b id="toZoneOut">--</b>)</span></div>
+      </div>
+
+      <div class="split-box show" id="splitBox">
+        <div class="split-row">
+          <span class="lbl">سعر التوصيل الكامل (يُحصَّل من الزبون)</span>
+          <span class="val" id="splitTotalOut">-- د.أ</span>
+        </div>
+        <div class="split-row commission">
+          <span class="lbl">🔶 عمولة سنترة (لو وصّل وسيط خارجي)</span>
+          <span class="val" id="splitCommissionOut">-- د.أ</span>
+        </div>
+        <div class="split-row partner">
+          <span class="lbl">✅ المستحق لوسيط التوصيل</span>
+          <span class="val" id="splitPartnerOut">-- د.أ</span>
+        </div>
+        <div class="split-warning" id="splitWarning" style="display:none;">
+          تنبيه: العمولة الثابتة أعلى من سعر التوصيل نفسه لهذا المسار — راجع قيمة العمولة أو ارفع الحد الأدنى للأجرة.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Parameters -->
+  <div class="card">
+    <h2>معاملات التسعير <span class="tag">قابلة للتعديل</span></h2>
+    <div class="params-grid">
+      <div>
+        <label>رسم الانطلاق (د.أ)</label>
+        <input type="number" id="baseFare" value="1.00" step="0.05" min="0">
+        <small>تكلفة ثابتة لكل توصيلة</small>
+      </div>
+      <div>
+        <label>سعر الكيلومتر (د.أ)</label>
+        <input type="number" id="kmRate" value="0.15" step="0.01" min="0">
+        <small>لكل كم بين المنطقتين</small>
+      </div>
+      <div>
+        <label>الحد الأدنى للأجرة (د.أ)</label>
+        <input type="number" id="minFare" value="1.50" step="0.05" min="0">
+        <small>أقل سعر ممكن لأي توصيلة</small>
+      </div>
+      <div>
+        <label>معامل تصحيح الطريق</label>
+        <input type="number" id="roadFactor" value="1.35" step="0.05" min="1">
+        <small>يحوّل المسافة الخط المستقيم لمسافة قيادة تقريبية</small>
+      </div>
+      <div class="commission-row">
+        <label>طريقة عمولة سنترة عند وسيط خارجي</label>
+        <div class="toggle-group" id="commissionModeToggle">
+          <button type="button" class="toggle-btn active" data-mode="flat">مبلغ ثابت</button>
+          <button type="button" class="toggle-btn" data-mode="percent">نسبة مئوية</button>
+        </div>
+        <div class="commission-input-wrap">
+          <input type="number" id="commissionFlat" value="0.50" step="0.05" min="0">
+          <input type="number" id="commissionPercent" value="20" step="1" min="0" max="100" style="display:none;">
+          <small id="commissionHint">مبلغ ثابت لكل طلبية، بغض النظر عن المسافة أو السعر</small>
+        </div>
+      </div>
+    </div>
+    <p class="note">
+      عدّل هذه القيم متى ما توفرت لديك بيانات تكلفة فعلية (وقود، أجور مندوبين) — الحاسبة وجدول الأسعار
+      بالأسفل يتحدثان تلقائياً فور تغييرها.
+    </p>
+  </div>
+
+  <!-- Full table generator -->
+  <div class="card">
+    <h2>توليد جدول الأسعار الكامل <span class="tag">كل المناطق</span></h2>
+    <div class="stat-row">
+      <div class="stat"><b id="areaCountStat">--</b>منطقة مغطاة</div>
+      <div class="stat"><b id="pairCountStat">--</b>مسار توصيل ممكن</div>
+    </div>
+    <div class="toolbar">
+      <div class="grow">
+        <label>بحث (اسم منطقة)</label>
+        <input type="text" id="searchInput" placeholder="مثال: عبدون">
+      </div>
+      <button class="btn-secondary" id="generateBtn">توليد الجدول الكامل</button>
+      <button class="btn-outline" id="downloadBtn">تنزيل CSV</button>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>من</th><th>إلى</th><th>المسافة (كم)</th><th>السعر (د.أ)</th><th>عمولة سنترة (د.أ)</th><th>مستحق الوسيط (د.أ)</th></tr>
+        </thead>
+        <tbody id="tableBody">
+          <tr><td colspan="6" style="padding:24px;color:#6B7488;">اضغط "توليد الجدول الكامل" لعرض كل المسارات</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>المنهجية</h2>
+    <p class="note">
+      المسافة بين أي منطقتين تُحسب من إحداثياتهما التقريبية (خط الطول/العرض) باستخدام معادلة Haversine،
+      ثم تُضرب بمعامل تصحيح الطريق لتقريبها من مسافة القيادة الفعلية على الشوارع (وليست خطاً مستقيماً).
+      الإحداثيات تقديرية لمراكز الأحياء وليست دقيقة GPS بنسبة 100% — للحصول على دقة أعلى، زوّدنا
+      لاحقاً بسجلات مسافات فعلية من تطبيق المندوبين وسنعدّلها. السعر لكل مسار = الحد الأقصى بين
+      (الحد الأدنى للأجرة) و (رسم الانطلاق + المسافة × سعر الكيلومتر).
+    </p>
+  </div>
+
+</div>
+
+<footer>سنترة © أداة داخلية لتسعير التوصيل — عمّان، الأردن</footer>
+
+<script>
+// ---------------------------------------------------------------
+// Amman areas: approximate centroid coordinates + broad zone label
+// (zone label is for grouping/reference only — pricing uses the
+// actual per-area coordinates, not the zone)
+// ---------------------------------------------------------------
+const AREAS = [
+  {name:"البلد (وسط البلد)", zone:"وسط عمّان", lat:31.9539, lon:35.9106},
+  {name:"جبل عمّان", zone:"وسط عمّان", lat:31.9515, lon:35.9284},
+  {name:"جبل اللويبدة", zone:"وسط عمّان", lat:31.9570, lon:35.9270},
+  {name:"جبل الحسين", zone:"وسط عمّان", lat:31.9633, lon:35.9270},
+  {name:"جبل النظيف", zone:"وسط عمّان", lat:31.9470, lon:35.9330},
+  {name:"رأس العين", zone:"وسط عمّان", lat:31.9490, lon:35.9310},
+  {name:"جبل التاج", zone:"وسط عمّان", lat:31.9720, lon:35.9230},
+
+  {name:"عبدون", zone:"غرب راقي", lat:31.9430, lon:35.8720},
+  {name:"الشميساني", zone:"غرب راقي", lat:31.9730, lon:35.8910},
+  {name:"الصويفية", zone:"غرب راقي", lat:31.9540, lon:35.8590},
+  {name:"أم أذينة", zone:"غرب راقي", lat:31.9600, lon:35.8720},
+  {name:"الرابية", zone:"غرب راقي", lat:31.9720, lon:35.8590},
+  {name:"دير غبار", zone:"غرب راقي", lat:31.9490, lon:35.8570},
+
+  {name:"خلدا", zone:"غرب ممتد", lat:31.9980, lon:35.8500},
+  {name:"دابوق", zone:"غرب ممتد", lat:32.0110, lon:35.8100},
+  {name:"تلاع العلي", zone:"غرب ممتد", lat:32.0030, lon:35.8650},
+  {name:"أم السماق", zone:"غرب ممتد", lat:31.9680, lon:35.8550},
+  {name:"الجبيهة", zone:"غرب ممتد", lat:32.0190, lon:35.8740},
+  {name:"مرج الحمام", zone:"غرب ممتد", lat:31.9210, lon:35.8600},
+  {name:"شفا بدران", zone:"غرب ممتد", lat:32.0450, lon:35.8970},
+
+  {name:"النصر", zone:"شرق عمّان", lat:31.9650, lon:35.9430},
+  {name:"النزهة", zone:"شرق عمّان", lat:31.9720, lon:35.9450},
+  {name:"الأشرفية", zone:"شرق عمّان", lat:31.9660, lon:35.9580},
+  {name:"ماركا", zone:"شرق عمّان", lat:31.9770, lon:35.9930},
+  {name:"الوحدات", zone:"شرق عمّان", lat:31.9360, lon:35.9430},
+  {name:"اليرموك", zone:"شرق عمّان", lat:31.9300, lon:35.9490},
+  {name:"القويسمة", zone:"شرق عمّان", lat:31.9170, lon:35.9660},
+  {name:"الهاشمي", zone:"شرق عمّان", lat:31.9650, lon:35.9650},
+
+  {name:"سحاب", zone:"أطراف عمّان", lat:31.8740, lon:36.0060},
+  {name:"ناعور", zone:"أطراف عمّان", lat:31.8880, lon:35.8280},
+  {name:"وادي السير", zone:"أطراف عمّان", lat:31.9580, lon:35.7860},
+  {name:"أبو نصير", zone:"أطراف عمّان", lat:32.0450, lon:35.9230},
+  {name:"طبربور", zone:"أطراف عمّان", lat:31.9990, lon:35.9430},
+  {name:"الموقر", zone:"أطراف عمّان", lat:31.8400, lon:36.0500},
+];
+
+function haversine(lat1, lon1, lat2, lon2){
+  const R = 6371; // km
+  const dLat = (lat2-lat1) * Math.PI/180;
+  const dLon = (lon2-lon1) * Math.PI/180;
+  const a = Math.sin(dLat/2)**2 +
+            Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*
+            Math.sin(dLon/2)**2;
+  const c = 2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R*c;
+}
+
+let commissionMode = 'flat'; // 'flat' | 'percent'
+
+function getParams(){
+  return {
+    base: parseFloat(document.getElementById('baseFare').value) || 0,
+    km: parseFloat(document.getElementById('kmRate').value) || 0,
+    min: parseFloat(document.getElementById('minFare').value) || 0,
+    road: parseFloat(document.getElementById('roadFactor').value) || 1,
+    commissionFlat: parseFloat(document.getElementById('commissionFlat').value) || 0,
+    commissionPercent: parseFloat(document.getElementById('commissionPercent').value) || 0,
+  };
+}
+
+function computeDistance(a, b){
+  const p = getParams();
+  const straight = haversine(a.lat, a.lon, b.lat, b.lon);
+  return straight * p.road;
+}
+
+function computePrice(distKm){
+  const p = getParams();
+  const raw = p.base + distKm * p.km;
+  return Math.round(Math.max(p.min, raw) * 100) / 100;
+}
+
+function computeSplit(price){
+  const p = getParams();
+  let commission;
+  if(commissionMode === 'percent'){
+    commission = price * (p.commissionPercent / 100);
+  } else {
+    commission = p.commissionFlat;
+  }
+  commission = Math.round(commission * 100) / 100;
+  const partner = Math.round(Math.max(0, price - commission) * 100) / 100;
+  return { commission, partner, exceeds: commission > price };
+}
+
+// --- populate selects, grouped by zone ---
+function populateSelects(){
+  const zones = [...new Set(AREAS.map(a=>a.zone))];
+  const fromSel = document.getElementById('fromSelect');
+  const toSel = document.getElementById('toSelect');
+  [fromSel, toSel].forEach(sel=>{
+    sel.innerHTML = '';
+    zones.forEach(z=>{
+      const og = document.createElement('optgroup');
+      og.label = z;
+      AREAS.filter(a=>a.zone===z).forEach(a=>{
+        const opt = document.createElement('option');
+        opt.value = a.name;
+        opt.textContent = a.name;
+        og.appendChild(opt);
+      });
+      sel.appendChild(og);
+    });
+  });
+  toSel.selectedIndex = 1;
+}
+
+function areaByName(name){
+  return AREAS.find(a=>a.name===name);
+}
+
+function runCalc(){
+  const fromA = areaByName(document.getElementById('fromSelect').value);
+  const toA = areaByName(document.getElementById('toSelect').value);
+  const dist = computeDistance(fromA, toA);
+  const price = computePrice(dist);
+
+  document.getElementById('priceOut').innerHTML = price.toFixed(2) + ' <span>دينار أردني</span>';
+  document.getElementById('distOut').textContent = dist.toFixed(1);
+  document.getElementById('fromAreaOut').textContent = fromA.name;
+  document.getElementById('toAreaOut').textContent = toA.name;
+  document.getElementById('fromZoneOut').textContent = fromA.zone;
+  document.getElementById('toZoneOut').textContent = toA.zone;
+
+  const split = computeSplit(price);
+  document.getElementById('splitTotalOut').textContent = price.toFixed(2) + ' د.أ';
+  document.getElementById('splitCommissionOut').textContent = split.commission.toFixed(2) + ' د.أ';
+  document.getElementById('splitPartnerOut').textContent = split.partner.toFixed(2) + ' د.أ';
+  document.getElementById('splitWarning').style.display = split.exceeds ? 'block' : 'none';
+
+  document.getElementById('resultBox').classList.add('show');
+}
+
+document.getElementById('calcBtn').addEventListener('click', runCalc);
+document.getElementById('swapBtn').addEventListener('click', ()=>{
+  const fromSel = document.getElementById('fromSelect');
+  const toSel = document.getElementById('toSelect');
+  const tmp = fromSel.value;
+  fromSel.value = toSel.value;
+  toSel.value = tmp;
+  runCalc();
+});
+['baseFare','kmRate','minFare','roadFactor','commissionFlat','commissionPercent'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', ()=>{
+    if(document.getElementById('resultBox').classList.contains('show')) runCalc();
+  });
+});
+
+document.getElementById('commissionModeToggle').addEventListener('click', (e)=>{
+  const btn = e.target.closest('.toggle-btn');
+  if(!btn) return;
+  commissionMode = btn.dataset.mode;
+  document.querySelectorAll('#commissionModeToggle .toggle-btn').forEach(b=>{
+    b.classList.toggle('active', b === btn);
+  });
+  const flatInput = document.getElementById('commissionFlat');
+  const pctInput = document.getElementById('commissionPercent');
+  const hint = document.getElementById('commissionHint');
+  if(commissionMode === 'percent'){
+    flatInput.style.display = 'none';
+    pctInput.style.display = '';
+    hint.textContent = 'نسبة % من سعر التوصيل الكامل لكل طلبية';
+  } else {
+    flatInput.style.display = '';
+    pctInput.style.display = 'none';
+    hint.textContent = 'مبلغ ثابت لكل طلبية، بغض النظر عن المسافة أو السعر';
+  }
+  if(document.getElementById('resultBox').classList.contains('show')) runCalc();
+});
+
+// --- full table generation ---
+let fullTableData = [];
+
+function generateFullTable(){
+  fullTableData = [];
+  for(let i=0;i<AREAS.length;i++){
+    for(let j=0;j<AREAS.length;j++){
+      if(i===j) continue;
+      const a = AREAS[i], b = AREAS[j];
+      const dist = computeDistance(a,b);
+      const price = computePrice(dist);
+      const split = computeSplit(price);
+      fullTableData.push({from:a.name, to:b.name, dist:dist, price:price, commission:split.commission, partner:split.partner});
+    }
+  }
+  document.getElementById('areaCountStat').textContent = AREAS.length;
+  document.getElementById('pairCountStat').textContent = fullTableData.length;
+  renderTable(fullTableData);
+}
+
+function renderTable(rows){
+  const body = document.getElementById('tableBody');
+  if(rows.length === 0){
+    body.innerHTML = '<tr><td colspan="6" style="padding:24px;color:#6B7488;">لا نتائج مطابقة</td></tr>';
+    return;
+  }
+  const frag = document.createDocumentFragment();
+  rows.forEach(r=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${r.from}</td><td>${r.to}</td><td>${r.dist.toFixed(1)}</td><td>${r.price.toFixed(2)}</td><td>${r.commission.toFixed(2)}</td><td>${r.partner.toFixed(2)}</td>`;
+    frag.appendChild(tr);
+  });
+  body.innerHTML = '';
+  body.appendChild(frag);
+}
+
+document.getElementById('generateBtn').addEventListener('click', generateFullTable);
+
+document.getElementById('searchInput').addEventListener('input', (e)=>{
+  const q = e.target.value.trim();
+  if(fullTableData.length === 0) return;
+  if(!q){ renderTable(fullTableData); return; }
+  const filtered = fullTableData.filter(r => r.from.includes(q) || r.to.includes(q));
+  renderTable(filtered);
+});
+
+document.getElementById('downloadBtn').addEventListener('click', ()=>{
+  if(fullTableData.length === 0) generateFullTable();
+  let csv = 'من,إلى,المسافة (كم),السعر (د.أ),عمولة سنترة (د.أ),مستحق الوسيط (د.أ)\n';
+  fullTableData.forEach(r=>{
+    csv += `${r.from},${r.to},${r.dist.toFixed(1)},${r.price.toFixed(2)},${r.commission.toFixed(2)},${r.partner.toFixed(2)}\n`;
+  });
+  const blob = new Blob(['﻿' + csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'santara_delivery_pricing_full.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
+populateSelects();
+runCalc();
+</script>
+</body>
+</html>

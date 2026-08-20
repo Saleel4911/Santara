@@ -610,7 +610,7 @@
 
   <!-- Parameters -->
   <div class="card">
-    <h2>معاملات التسعير <span class="tag">قابلة للتعديل</span></h2>
+    <h2>معاملات التسعير <span class="tag" id="paramsStatusTag">قابلة للتعديل</span></h2>
     <div class="params-grid">
       <div>
         <label>رسم الانطلاق (د.أ)</label>
@@ -649,11 +649,22 @@
           <small id="commissionHint">مبلغ ثابت لكل طلبية، بغض النظر عن المسافة أو السعر</small>
         </div>
       </div>
+      <div class="commission-row">
+        <label>شمول الأسعار المخصصة ضمن الحسابات</label>
+        <div class="toggle-group" id="applyOverridesToggle">
+          <button type="button" class="toggle-btn active" data-apply="yes">تُطبَّق (الوضع الافتراضي)</button>
+          <button type="button" class="toggle-btn" data-apply="no">تُتجاهَل مؤقتاً</button>
+        </div>
+        <small>عند اختيار "تُتجاهَل مؤقتاً"، تُستخدم المعادلة لجميع المسارات حتى التي لها سعر مخصص محفوظ، دون حذف ذلك السعر.</small>
+      </div>
     </div>
     <p class="note">
       يُرجى تعديل هذه القيم عند توفر بيانات تكلفة فعلية (كالوقود وأجور المندوبين)؛ إذ تتحدّث الحاسبة
-      وجدول الأسعار أدناه تلقائياً فور تغييرها.
+      وجدول الأسعار أدناه تلقائياً فور تغييرها. اضغط "حفظ المعاملات" لجعل هذه القيم مشتركة وثابتة لكل
+      الفريق، بحيث لا تحتاجون لإعادة إدخالها مع كل تسجيل دخول جديد.
     </p>
+    <button class="btn-secondary" id="saveParamsBtn" style="width:100%;">حفظ المعاملات</button>
+    <div id="paramsSaveStatus" style="margin-top:8px;font-size:12.5px;color:var(--muted);text-align:center;"></div>
   </div>
 </section>
 
@@ -713,7 +724,24 @@
         <input type="text" id="overrideToInput" list="areaDatalist" placeholder="اكتب أو اختر منطقة..." autocomplete="off">
         <small class="field-error" id="overrideToError" style="display:none;color:#B3261E;">منطقة غير معروفة، يُرجى الاختيار من القائمة</small>
       </div>
+      <div class="swap-btn">
+        <button id="overrideSwapBtn" type="button" title="تبديل">⇅</button>
+      </div>
     </div>
+
+    <div class="result" id="overrideCalcBox">
+      <div class="price" id="overrideCalcPrice">-- <span>دينار أردني (محتسب من المعادلة حالياً)</span></div>
+      <div class="result-details">
+        <div>المسافة التقديرية: <b id="overrideCalcDist">--</b> كم</div>
+      </div>
+      <div class="result-details" id="overrideExistingRow" style="display:none;">
+        <div style="color:var(--orange-dark);font-weight:700;">
+          يوجد سعر مخصص محفوظ حالياً لهذا المسار: <b id="overrideExistingPrice">--</b> د.أ
+          (بواسطة <b id="overrideExistingBy">--</b>) — عدّل القيمة أدناه واحفظ لتحديثه
+        </div>
+      </div>
+    </div>
+
     <div style="margin-top:14px;">
       <label for="overridePriceInput">السعر المخصص (د.أ)</label>
       <input type="number" id="overridePriceInput" step="0.25" min="0" placeholder="مثال: 2.50">
@@ -780,6 +808,19 @@
         <small class="field-error" id="quoteRestaurantAreaError" style="display:none;color:#B3261E;">منطقة غير معروفة، يُرجى الاختيار من القائمة</small>
       </div>
       <div></div>
+    </div>
+
+    <div class="quote-client-row no-print" id="quoteCourierFilterRow" style="display:none;">
+      <div>
+        <label for="quoteFilterFromInput">من (منطقة محددة، اختياري)</label>
+        <input type="text" id="quoteFilterFromInput" list="areaDatalist" placeholder="اتركه فارغاً لعرض كل المناطق" autocomplete="off">
+        <small class="field-error" id="quoteFilterFromError" style="display:none;color:#B3261E;">منطقة غير معروفة، يُرجى الاختيار من القائمة</small>
+      </div>
+      <div>
+        <label for="quoteFilterToInput">إلى (منطقة أو نطاق، اختياري)</label>
+        <input type="text" id="quoteFilterToInput" list="areaOrZoneDatalist" placeholder="اتركه فارغاً لعرض كل المناطق" autocomplete="off">
+        <small class="field-error" id="quoteFilterToError" style="display:none;color:#B3261E;">قيمة غير معروفة، يُرجى الاختيار من القائمة</small>
+      </div>
     </div>
 
     <div class="toolbar no-print">
@@ -918,15 +959,18 @@ let lastQuote = null; // most recently computed quote, ready to save to the shar
 // when a route has an override, it replaces the formula-computed price
 // everywhere: the calculator, the full table, and price quotations.
 let priceOverrides = new Map();
+let applyOverrides = true; // master switch: whether saved custom prices are used at all
 
 function overrideKey(nameA, nameB){
   return [nameA, nameB].sort().join('|||');
 }
 
 function computePriceForPair(areaA, areaB, distKm){
-  const override = priceOverrides.get(overrideKey(areaA.name, areaB.name));
-  if(override){
-    return { price: override.price, rawPrice: override.price, jabr: 0, isOverride: true };
+  if(applyOverrides){
+    const override = priceOverrides.get(overrideKey(areaA.name, areaB.name));
+    if(override){
+      return { price: override.price, rawPrice: override.price, jabr: 0, isOverride: true };
+    }
   }
   return computePrice(distKm);
 }
@@ -1128,17 +1172,15 @@ document.getElementById('swapBtn').addEventListener('click', ()=>{
   });
 });
 
-document.getElementById('commissionModeToggle').addEventListener('click', (e)=>{
-  const btn = e.target.closest('.toggle-btn');
-  if(!btn) return;
-  commissionMode = btn.dataset.mode;
+function applyCommissionMode(mode){
+  commissionMode = mode;
   document.querySelectorAll('#commissionModeToggle .toggle-btn').forEach(b=>{
-    b.classList.toggle('active', b === btn);
+    b.classList.toggle('active', b.dataset.mode === mode);
   });
   const flatInput = document.getElementById('commissionFlat');
   const pctInput = document.getElementById('commissionPercent');
   const hint = document.getElementById('commissionHint');
-  if(commissionMode === 'percent'){
+  if(mode === 'percent'){
     flatInput.style.display = 'none';
     pctInput.style.display = '';
     hint.textContent = 'نسبة % من سعر التوصيل الكامل لكل طلبية';
@@ -1147,8 +1189,78 @@ document.getElementById('commissionModeToggle').addEventListener('click', (e)=>{
     pctInput.style.display = 'none';
     hint.textContent = 'مبلغ ثابت لكل طلبية، بغض النظر عن المسافة أو السعر';
   }
+}
+
+document.getElementById('commissionModeToggle').addEventListener('click', (e)=>{
+  const btn = e.target.closest('.toggle-btn');
+  if(!btn) return;
+  applyCommissionMode(btn.dataset.mode);
   if(document.getElementById('resultBox').classList.contains('show')) runCalc();
 });
+
+document.getElementById('applyOverridesToggle').addEventListener('click', (e)=>{
+  const btn = e.target.closest('.toggle-btn');
+  if(!btn) return;
+  applyOverrides = btn.dataset.apply === 'yes';
+  document.querySelectorAll('#applyOverridesToggle .toggle-btn').forEach(b=>{
+    b.classList.toggle('active', b === btn);
+  });
+  if(document.getElementById('resultBox').classList.contains('show')) runCalc();
+});
+
+document.getElementById('saveParamsBtn').addEventListener('click', async ()=>{
+  const statusEl = document.getElementById('paramsSaveStatus');
+  if(!window.santaraSaveParams){
+    statusEl.textContent = 'خدمة الحفظ المشترك غير جاهزة بعد — يُرجى التحقق من الاتصال بالإنترنت والمحاولة مجدداً بعد لحظات';
+    return;
+  }
+  const p = getParams();
+  const btn = document.getElementById('saveParamsBtn');
+  btn.disabled = true;
+  statusEl.textContent = 'جارٍ الحفظ...';
+  try{
+    await window.santaraSaveParams({
+      base: p.base,
+      km: p.km,
+      min: p.min,
+      road: p.road,
+      roundStep: p.roundStep,
+      commissionMode: commissionMode,
+      commissionFlat: p.commissionFlat,
+      commissionPercent: p.commissionPercent,
+      applyOverrides: applyOverrides,
+    });
+    statusEl.textContent = 'تم حفظ معاملات التسعير، وستكون هذه القيم مشتركة لكل الفريق مع كل تسجيل دخول';
+  } catch(err){
+    statusEl.textContent = 'فشل الحفظ: ' + err.message;
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+// applies a saved shared-parameters document (loaded from Firestore) to the
+// on-screen fields, so the team never re-enters these values per login
+window.santaraSetPricingParams = function(data){
+  if(!data) return;
+  const setVal = (id, v) => { if(v != null){ const el = document.getElementById(id); if(el) el.value = v; } };
+  setVal('baseFare', data.base);
+  setVal('kmRate', data.km);
+  setVal('minFare', data.min);
+  setVal('roadFactor', data.road);
+  setVal('roundStep', data.roundStep);
+  setVal('commissionFlat', data.commissionFlat);
+  setVal('commissionPercent', data.commissionPercent);
+  if(data.commissionMode) applyCommissionMode(data.commissionMode);
+  if(typeof data.applyOverrides === 'boolean'){
+    applyOverrides = data.applyOverrides;
+    document.querySelectorAll('#applyOverridesToggle .toggle-btn').forEach(b=>{
+      b.classList.toggle('active', (b.dataset.apply === 'yes') === applyOverrides);
+    });
+  }
+  const tag = document.getElementById('paramsStatusTag');
+  if(tag) tag.textContent = data.updatedBy ? `آخر تحديث بواسطة ${data.updatedBy}` : 'قابلة للتعديل';
+  if(document.getElementById('resultBox').classList.contains('show')) runCalc();
+};
 
 // --- full table generation ---
 let fullTableData = [];
@@ -1374,7 +1486,65 @@ window.santaraSetPriceOverrides = function(map){
   if(tag) tag.textContent = `متصل — ${map.size} مسار مخصص`;
   // an override may change the price of the route currently on screen
   if(document.getElementById('resultBox').classList.contains('show')) runCalc();
+  updateOverridePreview();
 };
+
+// mini calculator inside the overrides tab, mirroring the main calculator:
+// shows the formula price live for whichever pair is selected, and flags
+// (with the saved value pre-filled) when that exact pair already has a
+// custom price on file.
+function updateOverridePreview(){
+  const fromInput = document.getElementById('overrideFromInput');
+  const toInput = document.getElementById('overrideToInput');
+  const priceInput = document.getElementById('overridePriceInput');
+  const box = document.getElementById('overrideCalcBox');
+  const existingRow = document.getElementById('overrideExistingRow');
+  if(!fromInput || !toInput || !box) return;
+
+  const fromA = resolveArea(fromInput.value);
+  const toA = resolveArea(toInput.value);
+
+  if(!fromA || !toA || fromA.name === toA.name){
+    box.classList.remove('show');
+    existingRow.style.display = 'none';
+    return;
+  }
+
+  const dist = computeDistance(fromA, toA);
+  const formulaPrice = computePrice(dist);
+  document.getElementById('overrideCalcPrice').innerHTML =
+    formulaPrice.price.toFixed(2) + ' <span>دينار أردني (محتسب من المعادلة حالياً)</span>';
+  document.getElementById('overrideCalcDist').textContent = dist.toFixed(1);
+  box.classList.add('show');
+
+  const existing = priceOverrides.get(overrideKey(fromA.name, toA.name));
+  if(existing){
+    existingRow.style.display = 'block';
+    document.getElementById('overrideExistingPrice').textContent = (existing.price||0).toFixed(2);
+    document.getElementById('overrideExistingBy').textContent = existing.updatedBy || '--';
+    priceInput.value = existing.price;
+  } else {
+    existingRow.style.display = 'none';
+    priceInput.value = '';
+  }
+}
+
+['overrideFromInput','overrideToInput'].forEach(id=>{
+  const el = document.getElementById(id);
+  if(el) el.addEventListener('change', updateOverridePreview);
+});
+
+const overrideSwapBtn = document.getElementById('overrideSwapBtn');
+if(overrideSwapBtn){
+  overrideSwapBtn.addEventListener('click', ()=>{
+    const fromInput = document.getElementById('overrideFromInput');
+    const toInput = document.getElementById('overrideToInput');
+    const tmp = fromInput.value;
+    fromInput.value = toInput.value;
+    toInput.value = tmp;
+    updateOverridePreview();
+  });
+}
 
 document.getElementById('saveOverrideBtn').addEventListener('click', async ()=>{
   const fromInput = document.getElementById('overrideFromInput');
@@ -1408,7 +1578,6 @@ document.getElementById('saveOverrideBtn').addEventListener('click', async ()=>{
   try{
     await window.santaraSaveOverride(fromA.name, toA.name, price);
     statusEl.textContent = 'تم حفظ السعر المخصص، وسيُستخدم فوراً في كل الحسابات لهذا المسار';
-    priceInput.value = '';
   } catch(err){
     statusEl.textContent = 'فشل الحفظ: ' + err.message;
   } finally {
@@ -1440,6 +1609,7 @@ document.getElementById('quoteAudienceToggle').addEventListener('click', (e)=>{
   quoteAudience = btn.dataset.audience;
   document.querySelectorAll('#quoteAudienceToggle .toggle-btn').forEach(b=>b.classList.toggle('active', b === btn));
   document.getElementById('quoteRestaurantRow').style.display = quoteAudience === 'restaurant' ? '' : 'none';
+  document.getElementById('quoteCourierFilterRow').style.display = quoteAudience === 'courier' ? '' : 'none';
 });
 
 function generateQuoteReference(){
@@ -1492,23 +1662,65 @@ document.getElementById('generateQuoteBtn').addEventListener('click', ()=>{
     body.innerHTML = '';
     body.appendChild(frag);
   } else {
-    labelEl.textContent = `عرض أسعار وتفاصيل تشغيلية لشركة توصيل${clientName ? ' — ' + clientName : ''}`;
+    const fromInput = document.getElementById('quoteFilterFromInput');
+    const toInput = document.getElementById('quoteFilterToInput');
+    const fromTrim = fromInput.value.trim();
+    const toTrim = toInput.value.trim();
+
+    let fromArea = null;
+    if(fromTrim){
+      fromArea = resolveArea(fromTrim);
+      setFieldValidity('quoteFilterFromInput', 'quoteFilterFromError', !!fromArea);
+      if(!fromArea) return;
+      fromInput.value = fromArea.name;
+    } else {
+      setFieldValidity('quoteFilterFromInput', 'quoteFilterFromError', true);
+    }
+
+    let toZone = null, toArea = null;
+    if(toTrim){
+      toZone = resolveZone(toTrim);
+      toArea = toZone ? null : resolveArea(toTrim);
+      setFieldValidity('quoteFilterToInput', 'quoteFilterToError', !!(toZone || toArea));
+      if(!toZone && !toArea) return;
+      if(toArea) toInput.value = toArea.name;
+    } else {
+      setFieldValidity('quoteFilterToInput', 'quoteFilterToError', true);
+    }
+
+    let filterLabel = '';
+    if(fromArea) filterLabel += ` — من ${fromArea.name}`;
+    if(toZone) filterLabel += ` — إلى نطاق ${toZone}`;
+    else if(toArea) filterLabel += ` — إلى ${toArea.name}`;
+
+    labelEl.textContent = `عرض أسعار وتفاصيل تشغيلية لشركة توصيل${clientName ? ' — ' + clientName : ''}${filterLabel}`;
     head.innerHTML =
-      '<tr><th>من</th><th>إلى</th><th>المسافة (كم)</th><th>السعر (د.أ)</th><th>عمولة سنترة (د.أ)</th><th>مستحق الوسيط (د.أ)</th></tr>';
+      '<tr><th>من</th><th>نطاق (من)</th><th>إلى</th><th>نطاق (إلى)</th><th>المسافة (كم)</th><th>السعر (د.أ)</th><th>عمولة سنترة (د.أ)</th><th>مستحق الوسيط (د.أ)</th></tr>';
 
     const frag = document.createDocumentFragment();
+    let rowCount = 0;
     for(let i = 0; i < AREAS.length; i++){
+      const a = AREAS[i];
+      if(fromArea && a.name !== fromArea.name) continue;
       for(let j = 0; j < AREAS.length; j++){
         if(i === j) continue;
-        const a = AREAS[i], b = AREAS[j];
+        const b = AREAS[j];
+        if(toZone && b.zone !== toZone) continue;
+        if(toArea && b.name !== toArea.name) continue;
         const dist = computeDistance(a, b);
         const priceInfo = computePriceForPair(a, b, dist);
         const split = computeSplit(priceInfo.price);
         const tr = document.createElement('tr');
         const priceCell = priceInfo.price.toFixed(2) + (priceInfo.isOverride ? ' <span class="override-tag">مخصص</span>' : '');
-        tr.innerHTML = `<td>${a.name}</td><td>${b.name}</td><td>${dist.toFixed(1)}</td><td>${priceCell}</td><td>${split.commission.toFixed(2)}</td><td>${split.partner.toFixed(2)}</td>`;
+        tr.innerHTML = `<td>${a.name}</td><td>${a.zone}</td><td>${b.name}</td><td>${b.zone}</td><td>${dist.toFixed(1)}</td><td>${priceCell}</td><td>${split.commission.toFixed(2)}</td><td>${split.partner.toFixed(2)}</td>`;
         frag.appendChild(tr);
+        rowCount++;
       }
+    }
+    if(rowCount === 0){
+      const tr = document.createElement('tr');
+      tr.innerHTML = '<td colspan="8" style="padding:24px;color:#6B7488;">لا توجد نتائج مطابقة لعوامل التصفية المحددة</td>';
+      frag.appendChild(tr);
     }
     body.innerHTML = '';
     body.appendChild(frag);
@@ -1582,8 +1794,11 @@ runCalc();
     const db = getFirestore(firebaseApp);
     const QUOTES_COLLECTION = "santara_quotes";
     const OVERRIDES_COLLECTION = "santara_price_overrides";
+    const CONFIG_COLLECTION = "santara_config";
+    const PARAMS_DOC_ID = "pricing_params";
     let unsubscribeLog = null;
     let unsubscribeOverrides = null;
+    let unsubscribeParams = null;
 
     function mapAuthError(code){
       const messages = {
@@ -1652,6 +1867,16 @@ runCalc();
       if (unsubscribeOverrides) { unsubscribeOverrides(); unsubscribeOverrides = null; }
     }
 
+    function startParamsListener(){
+      if (unsubscribeParams) return;
+      unsubscribeParams = onSnapshot(doc(db, CONFIG_COLLECTION, PARAMS_DOC_ID), (snap) => {
+        if (snap.exists() && window.santaraSetPricingParams) window.santaraSetPricingParams(snap.data());
+      }, (err) => { /* keep whatever is on screen if this fails */ });
+    }
+    function stopParamsListener(){
+      if (unsubscribeParams) { unsubscribeParams(); unsubscribeParams = null; }
+    }
+
     window.santaraFirebaseSave = async (quote) => {
       await addDoc(collection(db, QUOTES_COLLECTION), {
         ...quote,
@@ -1673,6 +1898,14 @@ runCalc();
       await deleteDoc(doc(db, OVERRIDES_COLLECTION, key));
     };
 
+    window.santaraSaveParams = async (params) => {
+      await setDoc(doc(db, CONFIG_COLLECTION, PARAMS_DOC_ID), {
+        ...params,
+        updatedBy: auth.currentUser ? (auth.currentUser.email || auth.currentUser.uid) : null,
+        updatedAt: serverTimestamp(),
+      });
+    };
+
     onAuthStateChanged(auth, (user) => {
       if (loginLoadingEl()) loginLoadingEl().style.display = 'none';
       if (user) {
@@ -1681,12 +1914,14 @@ runCalc();
         if (currentUserLabel()) currentUserLabel().textContent = user.email || user.uid;
         startLogListener();
         startOverridesListener();
+        startParamsListener();
       } else {
         if (loginScreenEl()) loginScreenEl().style.display = 'flex';
         if (loginFormEl()) loginFormEl().style.display = 'block';
         if (appContentEl()) appContentEl().style.display = 'none';
         stopLogListener();
         stopOverridesListener();
+        stopParamsListener();
         if (dbStatusTag()) dbStatusTag().textContent = '--';
       }
     });

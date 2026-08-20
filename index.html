@@ -29,7 +29,7 @@
   header{
     background:linear-gradient(135deg,var(--navy) 0%,var(--navy-dark) 100%);
     color:#fff;
-    padding:28px 20px 90px;
+    padding:28px 20px 32px;
     position:relative;
     text-align:center;
   }
@@ -46,7 +46,7 @@
 
   .wrap{
     max-width:1080px;
-    margin:-60px auto 40px;
+    margin:0 auto 40px;
     padding:0 16px;
   }
   .card{
@@ -311,9 +311,186 @@
     flex-wrap:wrap;
   }
   .commission-input-wrap input{max-width:160px;}
+  .field-error{
+    display:block;
+    margin-top:5px;
+    font-size:12px;
+    font-weight:700;
+  }
+  input.invalid{border-color:#B3261E !important;}
+
+  .tab-bar{
+    max-width:1080px;
+    margin:16px 16px 24px;
+    padding:10px;
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    position:relative;
+    z-index:2;
+    background:#fff;
+    border-radius:14px;
+    box-shadow:0 8px 24px rgba(15,42,92,0.12);
+  }
+  @media (min-width:1112px){ .tab-bar{margin-left:auto;margin-right:auto;} }
+  .tab-btn{
+    background:transparent;
+    border:1.5px solid transparent;
+    color:var(--navy);
+    padding:11px 18px;
+    border-radius:10px;
+    font-family:inherit;
+    font-size:14px;
+    font-weight:800;
+    cursor:pointer;
+    flex:1;
+    min-width:140px;
+  }
+  .tab-btn:hover{border-color:var(--blue);}
+  .tab-btn.active{
+    background:var(--navy);
+    border-color:var(--navy);
+    color:#fff;
+  }
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+
+  .quote-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:16px;
+    border-bottom:2px solid var(--border);
+    padding-bottom:16px;
+    margin-bottom:18px;
+  }
+  .quote-header .brand{display:flex;align-items:center;gap:12px;}
+  .quote-header .brand .logo-mark{width:44px;height:44px;border-radius:12px;margin-bottom:0;}
+  .quote-header .brand .logo-mark svg{width:24px;height:24px;}
+  .quote-header .brand-name{font-size:18px;font-weight:900;color:var(--navy);}
+  .quote-header .brand-sub{font-size:12px;color:var(--muted);}
+  .quote-meta{font-size:13px;color:var(--muted);text-align:left;}
+  .quote-meta div{margin-bottom:3px;}
+  .quote-client-row{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+    margin-bottom:18px;
+  }
+  @media (max-width:640px){ .quote-client-row{grid-template-columns:1fr;} }
+  .print-only{display:none;}
+
+  @media print{
+    header, .tab-bar, .no-print{display:none !important;}
+    body{background:#fff;}
+    .wrap{margin:0;max-width:100%;padding:0;}
+    .tab-panel{display:none !important;}
+    .tab-panel.active{display:block !important;}
+    .card{box-shadow:none;border:1px solid #ccc;}
+    .print-only{display:block;}
+    .table-scroll{max-height:none !important;overflow:visible !important;border:none;}
+    table{page-break-inside:auto;}
+    tr{page-break-inside:avoid;page-break-after:auto;}
+    thead{display:table-header-group;}
+    .login-screen{display:none !important;}
+  }
+
+  .login-screen{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:linear-gradient(135deg,var(--navy) 0%,var(--navy-dark) 100%);
+    padding:20px;
+  }
+  .login-card{
+    width:100%;
+    max-width:380px;
+    background:#fff;
+    border-radius:16px;
+    box-shadow:0 20px 50px rgba(0,0,0,0.25);
+    padding:32px 28px;
+    text-align:center;
+  }
+  .login-card .logo-mark{margin:0 auto 16px;}
+  .login-card h1{
+    font-size:20px;
+    color:var(--navy);
+    margin-bottom:6px;
+  }
+  .login-sub{
+    color:var(--muted);
+    font-size:13px;
+    margin-bottom:22px;
+  }
+  .login-card form{text-align:right;}
+  .login-card label{
+    display:block;
+    font-size:13px;
+    font-weight:700;
+    color:var(--muted);
+    margin-bottom:6px;
+  }
+  .login-card input{margin-bottom:14px;}
+  .login-error{
+    background:#FBE9E7;
+    color:#B3261E;
+    border-radius:10px;
+    padding:10px 12px;
+    font-size:13px;
+    margin-top:14px;
+    text-align:right;
+  }
+  .login-loading{
+    color:var(--muted);
+    font-size:13px;
+    margin-top:16px;
+  }
+  .session-bar{
+    max-width:1080px;
+    margin:14px auto 0;
+    padding:0 16px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    flex-wrap:wrap;
+    color:var(--muted);
+    font-size:13px;
+  }
+  .session-bar b{color:var(--navy);}
+  .session-bar .btn-outline{
+    width:auto;
+    padding:6px 14px;
+    font-size:12px;
+  }
 </style>
 </head>
 <body>
+
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <div class="logo-mark" style="background:var(--blue);">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M4 12 L10 18 L20 6" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <h1>سنترة — تسجيل الدخول</h1>
+    <p class="login-sub">يُرجى تسجيل الدخول بحساب سنترة الخاص بك للوصول إلى أداة تسعير التوصيل</p>
+    <form id="loginForm" style="display:none;">
+      <label for="loginEmail">البريد الإلكتروني</label>
+      <input type="email" id="loginEmail" required autocomplete="username" placeholder="name@santara.com">
+      <label for="loginPassword">كلمة المرور</label>
+      <input type="password" id="loginPassword" required autocomplete="current-password" placeholder="••••••••">
+      <button type="submit" class="btn-primary" id="loginSubmitBtn" style="width:100%;margin-top:4px;">تسجيل الدخول</button>
+    </form>
+    <div class="login-error" id="loginError" style="display:none;"></div>
+    <div class="login-loading" id="loginLoading">جارٍ التحقق من حالة الدخول...</div>
+  </div>
+</div>
+
+<div id="appContent" style="display:none;">
 
 <header>
   <div class="logo-mark">
@@ -325,20 +502,37 @@
   <p>احسب سعر التوصيل بين أي منطقتين في عمّان بشكل فوري ودقيق</p>
 </header>
 
+<div class="session-bar no-print">
+  <span>مسجّل الدخول بصفة: <b id="currentUserLabel">--</b></span>
+  <button class="btn-outline" id="logoutBtn">تسجيل الخروج</button>
+</div>
+
+<div class="tab-bar no-print">
+  <button class="tab-btn active" data-tab="calculator">الحاسبة</button>
+  <button class="tab-btn" data-tab="fulltable">جدول الأسعار الكامل</button>
+  <button class="tab-btn" data-tab="quote">عرض الأسعار</button>
+  <button class="tab-btn" data-tab="log">سجل التسعيرات المحفوظة</button>
+  <button class="tab-btn" data-tab="methodology">المنهجية</button>
+</div>
+
 <div class="wrap">
 
+<section class="tab-panel active" id="tab-calculator">
   <!-- Calculator -->
   <div class="card">
     <h2>حاسبة السعر بين منطقتين <span class="tag">مباشر</span></h2>
     <div class="calc-grid">
       <div>
-        <label for="fromSelect">من (منطقة الاستلام)</label>
-        <select id="fromSelect"></select>
+        <label for="fromInput">من (منطقة الاستلام)</label>
+        <input type="text" id="fromInput" list="areaDatalist" placeholder="اكتب أو اختر منطقة..." autocomplete="off">
+        <small class="field-error" id="fromError" style="display:none;color:#B3261E;">منطقة غير معروفة، يُرجى الاختيار من القائمة</small>
       </div>
       <div>
-        <label for="toSelect">إلى (منطقة التسليم)</label>
-        <select id="toSelect"></select>
+        <label for="toInput">إلى (منطقة التسليم)</label>
+        <input type="text" id="toInput" list="areaDatalist" placeholder="اكتب أو اختر منطقة..." autocomplete="off">
+        <small class="field-error" id="toError" style="display:none;color:#B3261E;">منطقة غير معروفة، يُرجى الاختيار من القائمة</small>
       </div>
+      <datalist id="areaDatalist"></datalist>
       <div class="swap-btn">
         <button id="swapBtn" title="تبديل">⇅</button>
       </div>
@@ -353,23 +547,31 @@
         <div>إلى: <b id="toAreaOut">--</b> <span style="color:var(--muted);">(نطاق <b id="toZoneOut">--</b>)</span></div>
       </div>
 
+      <div class="result-details" id="jabrRow" style="display:none;">
+        <div>السعر قبل التقريب: <b id="rawPriceOut">--</b></div>
+        <div>قيمة الجبر (فرق التقريب): <b id="jabrOut">--</b></div>
+      </div>
+
       <div class="split-box show" id="splitBox">
         <div class="split-row">
           <span class="lbl">سعر التوصيل الكامل (يُحصَّل من الزبون)</span>
           <span class="val" id="splitTotalOut">-- د.أ</span>
         </div>
         <div class="split-row commission">
-          <span class="lbl">🔶 عمولة سنترة (لو وصّل وسيط خارجي)</span>
+          <span class="lbl">عمولة سنترة (في حال قام وسيط خارجي بالتوصيل)</span>
           <span class="val" id="splitCommissionOut">-- د.أ</span>
         </div>
         <div class="split-row partner">
-          <span class="lbl">✅ المستحق لوسيط التوصيل</span>
+          <span class="lbl">المبلغ المستحق لوسيط التوصيل</span>
           <span class="val" id="splitPartnerOut">-- د.أ</span>
         </div>
         <div class="split-warning" id="splitWarning" style="display:none;">
           تنبيه: العمولة الثابتة أعلى من سعر التوصيل نفسه لهذا المسار — راجع قيمة العمولة أو ارفع الحد الأدنى للأجرة.
         </div>
       </div>
+
+      <button class="btn-secondary" id="saveQuoteBtn" style="width:100%;margin-top:14px;">حفظ هذه التسعيرة في السجل المشترك</button>
+      <div id="saveStatus" style="margin-top:8px;font-size:12.5px;color:var(--muted);text-align:center;"></div>
     </div>
   </div>
 
@@ -397,6 +599,11 @@
         <input type="number" id="roadFactor" value="1.35" step="0.05" min="1">
         <small>يحوّل المسافة الخط المستقيم لمسافة قيادة تقريبية</small>
       </div>
+      <div>
+        <label>تقريب سعر الزبون (د.أ)</label>
+        <input type="number" id="roundStep" value="0.25" step="0.05" min="0">
+        <small>السعر يُقرَّب لأقرب مضاعف لهذه القيمة (مثلاً 1.00، 1.25، 1.50...)</small>
+      </div>
       <div class="commission-row">
         <label>طريقة عمولة سنترة عند وسيط خارجي</label>
         <div class="toggle-group" id="commissionModeToggle">
@@ -411,11 +618,13 @@
       </div>
     </div>
     <p class="note">
-      عدّل هذه القيم متى ما توفرت لديك بيانات تكلفة فعلية (وقود، أجور مندوبين) — الحاسبة وجدول الأسعار
-      بالأسفل يتحدثان تلقائياً فور تغييرها.
+      يُرجى تعديل هذه القيم عند توفر بيانات تكلفة فعلية (كالوقود وأجور المندوبين)؛ إذ تتحدّث الحاسبة
+      وجدول الأسعار أدناه تلقائياً فور تغييرها.
     </p>
   </div>
+</section>
 
+<section class="tab-panel" id="tab-fulltable">
   <!-- Full table generator -->
   <div class="card">
     <h2>توليد جدول الأسعار الكامل <span class="tag">كل المناطق</span></h2>
@@ -425,40 +634,147 @@
     </div>
     <div class="toolbar">
       <div class="grow">
-        <label>بحث (اسم منطقة)</label>
-        <input type="text" id="searchInput" placeholder="مثال: عبدون">
+        <label>من (منطقة واحدة محددة)</label>
+        <input type="text" id="filterFromInput" list="areaDatalist" placeholder="مثال: عبدون" autocomplete="off">
+        <small class="field-error" id="filterFromError" style="display:none;color:#B3261E;">منطقة غير معروفة، يُرجى إدخال منطقة صحيحة</small>
+      </div>
+      <div class="grow">
+        <label>إلى (نطاق عام أو منطقة محددة)</label>
+        <input type="text" id="filterToInput" list="areaOrZoneDatalist" placeholder="مثال: غرب راقي — أو عبدون" autocomplete="off">
+        <small class="field-error" id="filterToError" style="display:none;color:#B3261E;">نطاق أو منطقة غير معروفة، يُرجى إدخال قيمة صحيحة</small>
       </div>
       <button class="btn-secondary" id="generateBtn">توليد الجدول الكامل</button>
       <button class="btn-outline" id="downloadBtn">تنزيل CSV</button>
     </div>
+    <datalist id="areaOrZoneDatalist"></datalist>
     <div class="table-scroll">
       <table>
         <thead>
-          <tr><th>من</th><th>إلى</th><th>المسافة (كم)</th><th>السعر (د.أ)</th><th>عمولة سنترة (د.أ)</th><th>مستحق الوسيط (د.أ)</th></tr>
+          <tr><th>من</th><th>إلى</th><th>المسافة (كم)</th><th>السعر (د.أ)</th><th>قيمة الجبر</th><th>عمولة سنترة (د.أ)</th><th>مستحق الوسيط (د.أ)</th></tr>
         </thead>
         <tbody id="tableBody">
-          <tr><td colspan="6" style="padding:24px;color:#6B7488;">اضغط "توليد الجدول الكامل" لعرض كل المسارات</td></tr>
+          <tr><td colspan="7" style="padding:24px;color:#6B7488;">يُرجى الضغط على زر "توليد الجدول الكامل" لعرض جميع المسارات</td></tr>
         </tbody>
       </table>
     </div>
   </div>
+</section>
 
+<section class="tab-panel" id="tab-quote">
+  <div class="card">
+    <div class="quote-header">
+      <div class="brand">
+        <div class="logo-mark">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M4 12 L10 18 L20 6" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-name">سنترة</div>
+          <div class="brand-sub">خدمة توصيل — عمّان، الأردن</div>
+        </div>
+      </div>
+      <div class="quote-meta">
+        <div>تاريخ العرض: <b id="quoteDateOut">--</b></div>
+        <div>رقم العرض: <b id="quoteRefOut">--</b></div>
+      </div>
+    </div>
+
+    <div class="quote-client-row no-print">
+      <div>
+        <label>نوع العميل</label>
+        <div class="toggle-group" id="quoteAudienceToggle">
+          <button type="button" class="toggle-btn active" data-audience="restaurant">مطعم</button>
+          <button type="button" class="toggle-btn" data-audience="courier">شركة توصيل</button>
+        </div>
+      </div>
+      <div>
+        <label for="quoteClientName">اسم العميل (اختياري)</label>
+        <input type="text" id="quoteClientName" placeholder="مثال: مطعم الرياض">
+      </div>
+    </div>
+
+    <div class="quote-client-row no-print" id="quoteRestaurantRow">
+      <div>
+        <label for="quoteRestaurantArea">منطقة المطعم</label>
+        <input type="text" id="quoteRestaurantArea" list="areaDatalist" placeholder="اكتب أو اختر منطقة..." autocomplete="off">
+        <small class="field-error" id="quoteRestaurantAreaError" style="display:none;color:#B3261E;">منطقة غير معروفة، يُرجى الاختيار من القائمة</small>
+      </div>
+      <div></div>
+    </div>
+
+    <div class="toolbar no-print">
+      <button class="btn-secondary" id="generateQuoteBtn">توليد عرض السعر</button>
+      <button class="btn-outline" id="printQuoteBtn">طباعة / تصدير PDF</button>
+    </div>
+
+    <div id="quoteAudienceLabel" style="margin-bottom:10px;font-weight:800;color:var(--navy);"></div>
+
+    <div class="table-scroll">
+      <table id="quoteTable">
+        <thead id="quoteTableHead"></thead>
+        <tbody id="quoteTableBody">
+          <tr><td style="padding:24px;color:#6B7488;">يُرجى تحديد نوع العميل والمنطقة (عند الاقتضاء) ثم الضغط على "توليد عرض السعر"</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="note print-only" style="margin-top:16px;">
+      الأسعار الواردة أعلاه تقديرية وقابلة للتعديل حسب الاتفاق النهائي، وتُحسب وفق المسافة التقريبية
+      بين المناطق داخل مدينة عمّان.
+    </p>
+  </div>
+</section>
+
+<section class="tab-panel" id="tab-log">
+  <!-- Shared, persistent pricing log (Firestore) -->
+  <div class="card">
+    <h2>سجل التسعيرات المحفوظة <span class="tag" id="dbStatusTag">--</span></h2>
+    <p class="note">
+      هذا السجل مشترك ومحفوظ بشكل دائم؛ فأي تسعيرة يقوم أي فرد من الفريق بحفظها من أي جهاز تظهر هنا
+      فوراً للجميع. يُرجى الضغط على زر "حفظ هذه التسعيرة في السجل المشترك" أعلاه بعد احتساب السعر لتسجيله هنا.
+    </p>
+    <div class="toolbar">
+      <button class="btn-outline" id="downloadLogBtn">تنزيل السجل CSV</button>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>الوقت</th><th>بواسطة</th><th>من</th><th>إلى</th><th>السعر (د.أ)</th><th>طريقة العمولة</th><th>عمولة سنترة (د.أ)</th><th>مستحق الوسيط (د.أ)</th></tr>
+        </thead>
+        <tbody id="logTableBody">
+          <tr><td colspan="8" style="padding:24px;color:#6B7488;">جارٍ الاتصال بالسجل المشترك...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="tab-panel" id="tab-methodology">
   <div class="card">
     <h2>المنهجية</h2>
     <p class="note">
       المسافة بين أي منطقتين تُحسب من إحداثياتهما التقريبية (خط الطول/العرض) باستخدام معادلة Haversine،
       ثم تُضرب بمعامل تصحيح الطريق لتقريبها من مسافة القيادة الفعلية على الشوارع (وليست خطاً مستقيماً).
-      الإحداثيات تقديرية لمراكز الأحياء وليست دقيقة GPS بنسبة 100% — للحصول على دقة أعلى، زوّدنا
-      لاحقاً بسجلات مسافات فعلية من تطبيق المندوبين وسنعدّلها. السعر لكل مسار = الحد الأقصى بين
+      الإحداثيات تقديرية لمراكز الأحياء وليست دقيقة بنسبة 100% كبيانات تحديد المواقع (GPS)؛ وللحصول
+      على دقة أعلى، يمكن تحديثها لاحقاً بسجلات مسافات فعلية من تطبيق المندوبين. السعر لكل مسار = الحد الأقصى بين
       (الحد الأدنى للأجرة) و (رسم الانطلاق + المسافة × سعر الكيلومتر).
     </p>
   </div>
+</section>
 
 </div>
 
 <footer>سنترة © أداة داخلية لتسعير التوصيل — عمّان، الأردن</footer>
 
+</div>
+
 <script>
+// NOTE: this is the core calculator — it must keep working even if the
+// Firebase/shared-log module below fails to load (offline, blocked CDN,
+// ad-blocker, etc). All Firebase code lives in a separate <script type="module">
+// at the end of the file, loaded defensively via dynamic import().
+
 // ---------------------------------------------------------------
 // Amman areas: approximate centroid coordinates + broad zone label
 // (zone label is for grouping/reference only — pricing uses the
@@ -517,6 +833,7 @@ function haversine(lat1, lon1, lat2, lon2){
 }
 
 let commissionMode = 'flat'; // 'flat' | 'percent'
+let lastQuote = null; // most recently computed quote, ready to save to the shared log
 
 function getParams(){
   return {
@@ -524,6 +841,7 @@ function getParams(){
     km: parseFloat(document.getElementById('kmRate').value) || 0,
     min: parseFloat(document.getElementById('minFare').value) || 0,
     road: parseFloat(document.getElementById('roadFactor').value) || 1,
+    roundStep: parseFloat(document.getElementById('roundStep').value) || 0,
     commissionFlat: parseFloat(document.getElementById('commissionFlat').value) || 0,
     commissionPercent: parseFloat(document.getElementById('commissionPercent').value) || 0,
   };
@@ -538,7 +856,15 @@ function computeDistance(a, b){
 function computePrice(distKm){
   const p = getParams();
   const raw = p.base + distKm * p.km;
-  return Math.round(Math.max(p.min, raw) * 100) / 100;
+  const floored = Math.max(p.min, raw);
+  const flooredClean = Math.round(floored * 100) / 100;
+  let rounded = flooredClean;
+  if(p.roundStep > 0){
+    rounded = Math.round(floored / p.roundStep) * p.roundStep;
+    rounded = Math.round(rounded * 100) / 100;
+  }
+  const jabr = Math.round((rounded - flooredClean) * 100) / 100; // rounding adjustment ("جبر")
+  return { price: rounded, rawPrice: flooredClean, jabr };
 }
 
 function computeSplit(price){
@@ -555,36 +881,97 @@ function computeSplit(price){
 }
 
 // --- populate selects, grouped by zone ---
+// shared datalist powering every area combobox (from/to/search) —
+// lets people either type-to-search or pick from the native suggestion list
 function populateSelects(){
   const zones = [...new Set(AREAS.map(a=>a.zone))];
-  const fromSel = document.getElementById('fromSelect');
-  const toSel = document.getElementById('toSelect');
-  [fromSel, toSel].forEach(sel=>{
-    sel.innerHTML = '';
-    zones.forEach(z=>{
-      const og = document.createElement('optgroup');
-      og.label = z;
-      AREAS.filter(a=>a.zone===z).forEach(a=>{
-        const opt = document.createElement('option');
-        opt.value = a.name;
-        opt.textContent = a.name;
-        og.appendChild(opt);
-      });
-      sel.appendChild(og);
+  const dl = document.getElementById('areaDatalist');
+  dl.innerHTML = '';
+  zones.forEach(z=>{
+    AREAS.filter(a=>a.zone===z).forEach(a=>{
+      const opt = document.createElement('option');
+      opt.value = a.name;
+      opt.textContent = `${a.name} — ${z}`;
+      dl.appendChild(opt);
     });
   });
-  toSel.selectedIndex = 1;
+
+  document.getElementById('fromInput').value = AREAS[0].name;
+  document.getElementById('toInput').value = AREAS[1].name;
+
+  // "إلى" filter datalist: zones first (general), then individual areas
+  const dl2 = document.getElementById('areaOrZoneDatalist');
+  dl2.innerHTML = '';
+  zones.forEach(z=>{
+    const opt = document.createElement('option');
+    opt.value = z;
+    opt.textContent = `${z} (نطاق كامل)`;
+    dl2.appendChild(opt);
+  });
+  zones.forEach(z=>{
+    AREAS.filter(a=>a.zone===z).forEach(a=>{
+      const opt = document.createElement('option');
+      opt.value = a.name;
+      opt.textContent = `${a.name} — ${z}`;
+      dl2.appendChild(opt);
+    });
+  });
 }
 
 function areaByName(name){
   return AREAS.find(a=>a.name===name);
 }
 
+// resolves free-typed text to a known area: exact match first,
+// then a unique substring match as a forgiving fallback
+function resolveArea(text){
+  const t = (text||'').trim();
+  if(!t) return null;
+  const exact = AREAS.find(a=>a.name === t);
+  if(exact) return exact;
+  const matches = AREAS.filter(a=>a.name.includes(t));
+  if(matches.length === 1) return matches[0];
+  return null;
+}
+
+// resolves free-typed text to a known zone name: exact match first,
+// then a unique substring match as a forgiving fallback
+function resolveZone(text){
+  const t = (text||'').trim();
+  if(!t) return null;
+  const zones = [...new Set(AREAS.map(a=>a.zone))];
+  const exact = zones.find(z=>z === t);
+  if(exact) return exact;
+  const matches = zones.filter(z=>z.includes(t));
+  if(matches.length === 1) return matches[0];
+  return null;
+}
+
+function setFieldValidity(inputId, errorId, isValid){
+  document.getElementById(inputId).classList.toggle('invalid', !isValid);
+  document.getElementById(errorId).style.display = isValid ? 'none' : 'block';
+}
+
 function runCalc(){
-  const fromA = areaByName(document.getElementById('fromSelect').value);
-  const toA = areaByName(document.getElementById('toSelect').value);
+  const fromInput = document.getElementById('fromInput');
+  const toInput = document.getElementById('toInput');
+  const fromA = resolveArea(fromInput.value);
+  const toA = resolveArea(toInput.value);
+
+  setFieldValidity('fromInput', 'fromError', !!fromA);
+  setFieldValidity('toInput', 'toError', !!toA);
+  if(!fromA || !toA){
+    document.getElementById('resultBox').classList.remove('show');
+    lastQuote = null;
+    return;
+  }
+  // normalize the input to the resolved area's exact name
+  fromInput.value = fromA.name;
+  toInput.value = toA.name;
+
   const dist = computeDistance(fromA, toA);
-  const price = computePrice(dist);
+  const priceInfo = computePrice(dist);
+  const price = priceInfo.price;
 
   document.getElementById('priceOut').innerHTML = price.toFixed(2) + ' <span>دينار أردني</span>';
   document.getElementById('distOut').textContent = dist.toFixed(1);
@@ -593,6 +980,16 @@ function runCalc(){
   document.getElementById('fromZoneOut').textContent = fromA.zone;
   document.getElementById('toZoneOut').textContent = toA.zone;
 
+  const jabrRow = document.getElementById('jabrRow');
+  if(Math.abs(priceInfo.jabr) > 0.001){
+    jabrRow.style.display = '';
+    document.getElementById('rawPriceOut').textContent = priceInfo.rawPrice.toFixed(2) + ' د.أ';
+    const jabrSign = priceInfo.jabr > 0 ? '+' : '';
+    document.getElementById('jabrOut').textContent = jabrSign + priceInfo.jabr.toFixed(2) + ' د.أ';
+  } else {
+    jabrRow.style.display = 'none';
+  }
+
   const split = computeSplit(price);
   document.getElementById('splitTotalOut').textContent = price.toFixed(2) + ' د.أ';
   document.getElementById('splitCommissionOut').textContent = split.commission.toFixed(2) + ' د.أ';
@@ -600,18 +997,35 @@ function runCalc(){
   document.getElementById('splitWarning').style.display = split.exceeds ? 'block' : 'none';
 
   document.getElementById('resultBox').classList.add('show');
+  document.getElementById('saveStatus').textContent = '';
+
+  lastQuote = {
+    from: fromA.name,
+    fromZone: fromA.zone,
+    to: toA.name,
+    toZone: toA.zone,
+    distance: Math.round(dist * 10) / 10,
+    price: price,
+    jabr: priceInfo.jabr,
+    commissionMode: commissionMode === 'percent' ? 'نسبة مئوية' : 'مبلغ ثابت',
+    commission: split.commission,
+    partner: split.partner,
+  };
 }
 
 document.getElementById('calcBtn').addEventListener('click', runCalc);
 document.getElementById('swapBtn').addEventListener('click', ()=>{
-  const fromSel = document.getElementById('fromSelect');
-  const toSel = document.getElementById('toSelect');
-  const tmp = fromSel.value;
-  fromSel.value = toSel.value;
-  toSel.value = tmp;
+  const fromInput = document.getElementById('fromInput');
+  const toInput = document.getElementById('toInput');
+  const tmp = fromInput.value;
+  fromInput.value = toInput.value;
+  toInput.value = tmp;
   runCalc();
 });
-['baseFare','kmRate','minFare','roadFactor','commissionFlat','commissionPercent'].forEach(id=>{
+['fromInput','toInput'].forEach(id=>{
+  document.getElementById(id).addEventListener('change', ()=>{ runCalc(); });
+});
+['baseFare','kmRate','minFare','roadFactor','roundStep','commissionFlat','commissionPercent'].forEach(id=>{
   document.getElementById(id).addEventListener('input', ()=>{
     if(document.getElementById('resultBox').classList.contains('show')) runCalc();
   });
@@ -649,26 +1063,65 @@ function generateFullTable(){
       if(i===j) continue;
       const a = AREAS[i], b = AREAS[j];
       const dist = computeDistance(a,b);
-      const price = computePrice(dist);
+      const priceInfo = computePrice(dist);
+      const price = priceInfo.price;
       const split = computeSplit(price);
-      fullTableData.push({from:a.name, to:b.name, dist:dist, price:price, commission:split.commission, partner:split.partner});
+      fullTableData.push({from:a.name, to:b.name, dist:dist, price:price, jabr:priceInfo.jabr, commission:split.commission, partner:split.partner});
     }
   }
   document.getElementById('areaCountStat').textContent = AREAS.length;
   document.getElementById('pairCountStat').textContent = fullTableData.length;
-  renderTable(fullTableData);
+  applyTableFilter();
+}
+
+// filter rules: "من" must resolve to exactly one specific area (AND'ed).
+// "إلى" may resolve to either a whole zone (shows every area within it)
+// or one specific area — whichever matches what was typed.
+function applyTableFilter(){
+  let rows = fullTableData;
+  const fromText = document.getElementById('filterFromInput').value;
+  const toText = document.getElementById('filterToInput').value;
+
+  const fromTrim = fromText.trim();
+  if(fromTrim){
+    const fromArea = resolveArea(fromTrim);
+    setFieldValidity('filterFromInput', 'filterFromError', !!fromArea);
+    rows = fromArea ? rows.filter(r => r.from === fromArea.name) : [];
+  } else {
+    setFieldValidity('filterFromInput', 'filterFromError', true);
+  }
+
+  const toTrim = toText.trim();
+  if(toTrim){
+    const toZone = resolveZone(toTrim);
+    const toArea = toZone ? null : resolveArea(toTrim);
+    setFieldValidity('filterToInput', 'filterToError', !!(toZone || toArea));
+    if(toZone){
+      const zoneAreaNames = new Set(AREAS.filter(a=>a.zone===toZone).map(a=>a.name));
+      rows = rows.filter(r => zoneAreaNames.has(r.to));
+    } else if(toArea){
+      rows = rows.filter(r => r.to === toArea.name);
+    } else {
+      rows = [];
+    }
+  } else {
+    setFieldValidity('filterToInput', 'filterToError', true);
+  }
+
+  renderTable(rows);
 }
 
 function renderTable(rows){
   const body = document.getElementById('tableBody');
   if(rows.length === 0){
-    body.innerHTML = '<tr><td colspan="6" style="padding:24px;color:#6B7488;">لا نتائج مطابقة</td></tr>';
+    body.innerHTML = '<tr><td colspan="7" style="padding:24px;color:#6B7488;">لا نتائج مطابقة</td></tr>';
     return;
   }
   const frag = document.createDocumentFragment();
   rows.forEach(r=>{
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${r.from}</td><td>${r.to}</td><td>${r.dist.toFixed(1)}</td><td>${r.price.toFixed(2)}</td><td>${r.commission.toFixed(2)}</td><td>${r.partner.toFixed(2)}</td>`;
+    const jabrText = (r.jabr > 0 ? '+' : '') + r.jabr.toFixed(2);
+    tr.innerHTML = `<td>${r.from}</td><td>${r.to}</td><td>${r.dist.toFixed(1)}</td><td>${r.price.toFixed(2)}</td><td>${jabrText}</td><td>${r.commission.toFixed(2)}</td><td>${r.partner.toFixed(2)}</td>`;
     frag.appendChild(tr);
   });
   body.innerHTML = '';
@@ -677,19 +1130,18 @@ function renderTable(rows){
 
 document.getElementById('generateBtn').addEventListener('click', generateFullTable);
 
-document.getElementById('searchInput').addEventListener('input', (e)=>{
-  const q = e.target.value.trim();
-  if(fullTableData.length === 0) return;
-  if(!q){ renderTable(fullTableData); return; }
-  const filtered = fullTableData.filter(r => r.from.includes(q) || r.to.includes(q));
-  renderTable(filtered);
+['filterFromInput','filterToInput'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', ()=>{
+    if(fullTableData.length === 0){ generateFullTable(); return; }
+    applyTableFilter();
+  });
 });
 
 document.getElementById('downloadBtn').addEventListener('click', ()=>{
   if(fullTableData.length === 0) generateFullTable();
-  let csv = 'من,إلى,المسافة (كم),السعر (د.أ),عمولة سنترة (د.أ),مستحق الوسيط (د.أ)\n';
+  let csv = 'من,إلى,المسافة (كم),السعر (د.أ),قيمة الجبر,عمولة سنترة (د.أ),مستحق الوسيط (د.أ)\n';
   fullTableData.forEach(r=>{
-    csv += `${r.from},${r.to},${r.dist.toFixed(1)},${r.price.toFixed(2)},${r.commission.toFixed(2)},${r.partner.toFixed(2)}\n`;
+    csv += `${r.from},${r.to},${r.dist.toFixed(1)},${r.price.toFixed(2)},${r.jabr.toFixed(2)},${r.commission.toFixed(2)},${r.partner.toFixed(2)}\n`;
   });
   const blob = new Blob(['﻿' + csv], {type:'text/csv;charset=utf-8;'});
   const url = URL.createObjectURL(blob);
@@ -702,8 +1154,319 @@ document.getElementById('downloadBtn').addEventListener('click', ()=>{
   URL.revokeObjectURL(url);
 });
 
+// ---------------------------------------------------------------
+// Shared pricing log — UI side only. The actual Firebase read/write
+// lives in a separate <script type="module"> below, loaded defensively
+// so a blocked/offline connection never breaks the calculator itself.
+// window.santaraFirebaseSave / window.santaraRenderLog are the bridge.
+// ---------------------------------------------------------------
+let currentLogRows = [];
+
+function formatTimestamp(ts){
+  if(!ts) return 'الآن (قيد المزامنة)';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  return d.toLocaleString('ar-JO', {dateStyle:'short', timeStyle:'short'});
+}
+
+function renderLogTable(rows){
+  const body = document.getElementById('logTableBody');
+  if(rows.length === 0){
+    body.innerHTML = '<tr><td colspan="8" style="padding:24px;color:#6B7488;">لا توجد تسعيرات محفوظة حتى الآن</td></tr>';
+    return;
+  }
+  const frag = document.createDocumentFragment();
+  rows.forEach(r=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${formatTimestamp(r.timestamp)}</td><td>${r.savedBy||'--'}</td><td>${r.from}</td><td>${r.to}</td><td>${(r.price||0).toFixed(2)}</td><td>${r.commissionMode||''}</td><td>${(r.commission||0).toFixed(2)}</td><td>${(r.partner||0).toFixed(2)}</td>`;
+    frag.appendChild(tr);
+  });
+  body.innerHTML = '';
+  body.appendChild(frag);
+}
+
+window.santaraRenderLog = function(rows){
+  currentLogRows = rows;
+  renderLogTable(rows);
+};
+
+document.getElementById('saveQuoteBtn').addEventListener('click', async ()=>{
+  const statusEl = document.getElementById('saveStatus');
+  if(!lastQuote){
+    statusEl.textContent = 'يُرجى احتساب السعر أولاً قبل الحفظ';
+    return;
+  }
+  if(!window.santaraFirebaseSave){
+    statusEl.textContent = 'خدمة الحفظ المشترك غير جاهزة بعد — يُرجى التحقق من الاتصال بالإنترنت والمحاولة مجدداً بعد لحظات';
+    return;
+  }
+  const btn = document.getElementById('saveQuoteBtn');
+  btn.disabled = true;
+  statusEl.textContent = 'جارٍ الحفظ...';
+  try{
+    await window.santaraFirebaseSave(lastQuote);
+    statusEl.textContent = 'تم الحفظ في السجل المشترك، وستظهر التسعيرة أدناه';
+  } catch(err){
+    statusEl.textContent = 'فشل الحفظ: ' + err.message;
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+document.getElementById('downloadLogBtn').addEventListener('click', ()=>{
+  if(currentLogRows.length === 0) return;
+  let csv = 'الوقت,بواسطة,من,إلى,المسافة (كم),السعر (د.أ),طريقة العمولة,عمولة سنترة (د.أ),مستحق الوسيط (د.أ)\n';
+  currentLogRows.forEach(r=>{
+    csv += `${formatTimestamp(r.timestamp)},${r.savedBy||''},${r.from},${r.to},${(r.distance||0).toFixed(1)},${(r.price||0).toFixed(2)},${r.commissionMode||''},${(r.commission||0).toFixed(2)},${(r.partner||0).toFixed(2)}\n`;
+  });
+  const blob = new Blob(['﻿' + csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'santara_pricing_log.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
+// ---------------------------------------------------------------
+// Tab navigation
+// ---------------------------------------------------------------
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const tab = btn.dataset.tab;
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b === btn));
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('active', p.id === 'tab-' + tab));
+  });
+});
+
+// ---------------------------------------------------------------
+// Price-quotation tab — a client-presentable offer.
+// Restaurant audience: area + price only.
+// Delivery-company audience: the full operational breakdown.
+// ---------------------------------------------------------------
+let quoteAudience = 'restaurant';
+
+document.getElementById('quoteAudienceToggle').addEventListener('click', (e)=>{
+  const btn = e.target.closest('.toggle-btn');
+  if(!btn) return;
+  quoteAudience = btn.dataset.audience;
+  document.querySelectorAll('#quoteAudienceToggle .toggle-btn').forEach(b=>b.classList.toggle('active', b === btn));
+  document.getElementById('quoteRestaurantRow').style.display = quoteAudience === 'restaurant' ? '' : 'none';
+});
+
+function generateQuoteReference(){
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  const suffix = Math.floor(Math.random() * 900 + 100);
+  return `SNT-${y}${m}${day}-${suffix}`;
+}
+
+document.getElementById('generateQuoteBtn').addEventListener('click', ()=>{
+  const clientName = document.getElementById('quoteClientName').value.trim();
+  const now = new Date();
+  document.getElementById('quoteDateOut').textContent =
+    now.toLocaleDateString('ar-JO', {year:'numeric', month:'long', day:'numeric'});
+  document.getElementById('quoteRefOut').textContent = generateQuoteReference();
+
+  const head = document.getElementById('quoteTableHead');
+  const body = document.getElementById('quoteTableBody');
+  const labelEl = document.getElementById('quoteAudienceLabel');
+
+  if(quoteAudience === 'restaurant'){
+    const areaInput = document.getElementById('quoteRestaurantArea');
+    const area = resolveArea(areaInput.value);
+    setFieldValidity('quoteRestaurantArea', 'quoteRestaurantAreaError', !!area);
+    if(!area) return;
+    areaInput.value = area.name;
+
+    labelEl.textContent = `عرض أسعار توصيل${clientName ? ' — ' + clientName : ''} — من منطقة ${area.name}`;
+    head.innerHTML = '<tr><th>المنطقة</th><th>السعر (د.أ)</th></tr>';
+
+    const frag = document.createDocumentFragment();
+    AREAS.filter(a => a.name !== area.name).forEach(a=>{
+      const dist = computeDistance(area, a);
+      const priceInfo = computePrice(dist);
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${a.name}</td><td>${priceInfo.price.toFixed(2)}</td>`;
+      frag.appendChild(tr);
+    });
+    body.innerHTML = '';
+    body.appendChild(frag);
+  } else {
+    labelEl.textContent = `عرض أسعار وتفاصيل تشغيلية لشركة توصيل${clientName ? ' — ' + clientName : ''}`;
+    head.innerHTML =
+      '<tr><th>من</th><th>إلى</th><th>المسافة (كم)</th><th>السعر (د.أ)</th><th>عمولة سنترة (د.أ)</th><th>مستحق الوسيط (د.أ)</th></tr>';
+
+    const frag = document.createDocumentFragment();
+    for(let i = 0; i < AREAS.length; i++){
+      for(let j = 0; j < AREAS.length; j++){
+        if(i === j) continue;
+        const a = AREAS[i], b = AREAS[j];
+        const dist = computeDistance(a, b);
+        const priceInfo = computePrice(dist);
+        const split = computeSplit(priceInfo.price);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${a.name}</td><td>${b.name}</td><td>${dist.toFixed(1)}</td><td>${priceInfo.price.toFixed(2)}</td><td>${split.commission.toFixed(2)}</td><td>${split.partner.toFixed(2)}</td>`;
+        frag.appendChild(tr);
+      }
+    }
+    body.innerHTML = '';
+    body.appendChild(frag);
+  }
+});
+
+document.getElementById('printQuoteBtn').addEventListener('click', ()=>{
+  window.print();
+});
+
 populateSelects();
 runCalc();
+</script>
+
+<script type="module">
+// Firebase — shared, persistent pricing log for the whole team, gated behind
+// individual sign-in (Firebase Authentication). Loaded via dynamic import()
+// inside try/catch on purpose: if the CDN or network is unreachable, this
+// whole block fails safely without ever touching the core calculator above
+// (which has already finished loading, though it stays hidden behind the
+// login screen until a user is authenticated).
+(async () => {
+  const dbStatusTag = () => document.getElementById('dbStatusTag');
+  const logBody = () => document.getElementById('logTableBody');
+  const loginScreenEl = () => document.getElementById('loginScreen');
+  const appContentEl = () => document.getElementById('appContent');
+  const loginLoadingEl = () => document.getElementById('loginLoading');
+  const loginErrorEl = () => document.getElementById('loginError');
+  const loginFormEl = () => document.getElementById('loginForm');
+  const loginSubmitBtn = () => document.getElementById('loginSubmitBtn');
+  const currentUserLabel = () => document.getElementById('currentUserLabel');
+  const logoutBtn = () => document.getElementById('logoutBtn');
+
+  function showLoginError(msg){
+    const el = loginErrorEl();
+    if (el) { el.textContent = msg; el.style.display = 'block'; }
+  }
+
+  // Fallback submit handler in case Firebase never finishes loading —
+  // replaced with the real sign-in call once the SDK is ready below.
+  let handleLogin = async () => {
+    showLoginError('تعذّر الاتصال بخدمة تسجيل الدخول، يُرجى التحقق من الاتصال بالإنترنت وإعادة تحميل الصفحة');
+  };
+  if (loginFormEl()) {
+    loginFormEl().addEventListener('submit', (e) => {
+      e.preventDefault();
+      handleLogin();
+    });
+  }
+
+  try {
+    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js");
+    const {
+      getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut
+    } = await import("https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js");
+    const {
+      getFirestore, collection, addDoc, onSnapshot, query, orderBy, limit, serverTimestamp
+    } = await import("https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js");
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDpGiTwFpB1GD0LuHCtuxDMwBWWZQpPgVk",
+      authDomain: "santara-75a86.firebaseapp.com",
+      projectId: "santara-75a86",
+      storageBucket: "santara-75a86.firebasestorage.app",
+      messagingSenderId: "63910099317",
+      appId: "1:63910099317:web:aed88c2d7f3a4597d03b3c",
+      measurementId: "G-ZTCVRCMW44"
+    };
+    const firebaseApp = initializeApp(firebaseConfig);
+    const auth = getAuth(firebaseApp);
+    const db = getFirestore(firebaseApp);
+    const QUOTES_COLLECTION = "santara_quotes";
+    let unsubscribeLog = null;
+
+    function mapAuthError(code){
+      const messages = {
+        'auth/invalid-email': 'صيغة البريد الإلكتروني غير صحيحة',
+        'auth/user-not-found': 'لا يوجد حساب مرتبط بهذا البريد الإلكتروني',
+        'auth/wrong-password': 'كلمة المرور غير صحيحة',
+        'auth/invalid-credential': 'البريد الإلكتروني أو كلمة المرور غير صحيحة',
+        'auth/missing-password': 'يُرجى إدخال كلمة المرور',
+        'auth/too-many-requests': 'تم إيقاف المحاولات مؤقتاً بسبب تكرارها، يُرجى المحاولة لاحقاً',
+        'auth/network-request-failed': 'تعذّر الاتصال بالخادم، يُرجى التحقق من اتصالك بالإنترنت',
+        'auth/user-disabled': 'تم تعطيل هذا الحساب، يُرجى التواصل مع مدير النظام',
+      };
+      return messages[code] || 'تعذّر تسجيل الدخول، يُرجى المحاولة مرة أخرى';
+    }
+
+    handleLogin = async () => {
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      if (loginErrorEl()) loginErrorEl().style.display = 'none';
+      const btn = loginSubmitBtn();
+      if (btn) { btn.disabled = true; btn.textContent = 'جارٍ التحقق...'; }
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+      } catch (err) {
+        showLoginError(mapAuthError(err.code));
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = 'تسجيل الدخول'; }
+      }
+    };
+
+    if (logoutBtn()) {
+      logoutBtn().addEventListener('click', async () => {
+        try { await signOut(auth); } catch (e) { /* ignore */ }
+      });
+    }
+
+    function startLogListener(){
+      if (unsubscribeLog) return;
+      const logQuery = query(collection(db, QUOTES_COLLECTION), orderBy('timestamp', 'desc'), limit(200));
+      unsubscribeLog = onSnapshot(logQuery, (snapshot) => {
+        const rows = snapshot.docs.map(d => d.data());
+        if (window.santaraRenderLog) window.santaraRenderLog(rows);
+        if (dbStatusTag()) dbStatusTag().textContent = `متصل — ${rows.length} تسعيرة`;
+      }, (err) => {
+        if (dbStatusTag()) dbStatusTag().textContent = 'خطأ بالاتصال';
+        if (logBody()) logBody().innerHTML =
+          `<tr><td colspan="8" style="padding:24px;color:#B3261E;">تعذّر تحميل السجل: ${err.message}</td></tr>`;
+      });
+    }
+    function stopLogListener(){
+      if (unsubscribeLog) { unsubscribeLog(); unsubscribeLog = null; }
+    }
+
+    window.santaraFirebaseSave = async (quote) => {
+      await addDoc(collection(db, QUOTES_COLLECTION), {
+        ...quote,
+        savedBy: auth.currentUser ? (auth.currentUser.email || auth.currentUser.uid) : null,
+        timestamp: serverTimestamp(),
+      });
+    };
+
+    onAuthStateChanged(auth, (user) => {
+      if (loginLoadingEl()) loginLoadingEl().style.display = 'none';
+      if (user) {
+        if (loginScreenEl()) loginScreenEl().style.display = 'none';
+        if (appContentEl()) appContentEl().style.display = 'block';
+        if (currentUserLabel()) currentUserLabel().textContent = user.email || user.uid;
+        startLogListener();
+      } else {
+        if (loginScreenEl()) loginScreenEl().style.display = 'flex';
+        if (loginFormEl()) loginFormEl().style.display = 'block';
+        if (appContentEl()) appContentEl().style.display = 'none';
+        stopLogListener();
+        if (dbStatusTag()) dbStatusTag().textContent = '--';
+      }
+    });
+  } catch (err) {
+    if (loginLoadingEl()) loginLoadingEl().style.display = 'none';
+    if (loginFormEl()) loginFormEl().style.display = 'block';
+    showLoginError('تعذّر الاتصال بخدمة تسجيل الدخول، يُرجى التحقق من الاتصال بالإنترنت وإعادة تحميل الصفحة');
+  }
+})();
 </script>
 </body>
 </html>

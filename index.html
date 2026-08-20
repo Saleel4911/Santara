@@ -196,6 +196,16 @@
   }
   tbody tr:nth-child(even){background:#FAFBFE;}
   .table-scroll{max-height:420px;overflow:auto;border:1px solid var(--border);border-radius:10px;}
+  .quote-zone-row td{
+    background:#EEF1F8;
+    color:var(--navy);
+    font-weight:800;
+    font-size:13px;
+    text-align:right;
+    padding:9px 12px;
+    border-top:1.5px solid var(--border);
+    border-bottom:1.5px solid var(--border);
+  }
 
   .toolbar{
     display:flex;
@@ -392,6 +402,7 @@
     .table-scroll{max-height:none !important;overflow:visible !important;border:none;}
     table{page-break-inside:auto;}
     tr{page-break-inside:avoid;page-break-after:auto;}
+    .quote-zone-row{page-break-after:avoid;}
     thead{display:table-header-group;}
     .login-screen{display:none !important;}
   }
@@ -1286,7 +1297,15 @@ document.getElementById('generateQuoteBtn').addEventListener('click', ()=>{
     head.innerHTML = '<tr><th>المنطقة</th><th>السعر (د.أ)</th></tr>';
 
     const frag = document.createDocumentFragment();
+    let lastZone = null;
     AREAS.filter(a => a.name !== area.name).forEach(a=>{
+      if(a.zone !== lastZone){
+        lastZone = a.zone;
+        const zoneRow = document.createElement('tr');
+        zoneRow.className = 'quote-zone-row';
+        zoneRow.innerHTML = `<td colspan="2">نطاق ${a.zone}</td>`;
+        frag.appendChild(zoneRow);
+      }
       const dist = computeDistance(area, a);
       const priceInfo = computePrice(dist);
       const tr = document.createElement('tr');

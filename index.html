@@ -238,6 +238,27 @@
     cursor:pointer;
   }
   .btn-outline:hover{border-color:var(--blue);}
+  .btn-danger-outline{
+    background:#fff;
+    color:#B3261E;
+    border:1.5px solid #F3C6C1;
+    padding:6px 14px;
+    border-radius:8px;
+    font-size:12px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .btn-danger-outline:hover{border-color:#B3261E;}
+  .override-tag{
+    display:inline-block;
+    background:#FFF1E0;
+    color:var(--orange-dark);
+    border-radius:6px;
+    padding:1px 6px;
+    font-size:11px;
+    font-weight:800;
+    margin-inline-start:6px;
+  }
 
   .badge{
     display:inline-block;
@@ -521,6 +542,7 @@
 <div class="tab-bar no-print">
   <button class="tab-btn active" data-tab="calculator">الحاسبة</button>
   <button class="tab-btn" data-tab="fulltable">جدول الأسعار الكامل</button>
+  <button class="tab-btn" data-tab="overrides">أسعار مخصصة</button>
   <button class="tab-btn" data-tab="quote">عرض الأسعار</button>
   <button class="tab-btn" data-tab="log">سجل التسعيرات المحفوظة</button>
   <button class="tab-btn" data-tab="methodology">المنهجية</button>
@@ -665,6 +687,52 @@
         </thead>
         <tbody id="tableBody">
           <tr><td colspan="7" style="padding:24px;color:#6B7488;">يُرجى الضغط على زر "توليد الجدول الكامل" لعرض جميع المسارات</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="tab-panel" id="tab-overrides">
+  <!-- Custom per-route price overrides -->
+  <div class="card">
+    <h2>إضافة سعر مخصص لمسار محدد <span class="tag">استثناء</span></h2>
+    <p class="note">
+      يمكنك هنا تثبيت سعر ثابت لمسار معيّن بين منطقتين (بالاتجاهين)، بحيث يُستخدم هذا السعر بدلاً من السعر المحتسب
+      تلقائياً من المعادلة — في الحاسبة، وجدول الأسعار الكامل، وعروض الأسعار على حد سواء. هذا السعر مشترك ويظهر لكل
+      أعضاء الفريق فور حفظه.
+    </p>
+    <div class="calc-grid">
+      <div>
+        <label for="overrideFromInput">من</label>
+        <input type="text" id="overrideFromInput" list="areaDatalist" placeholder="اكتب أو اختر منطقة..." autocomplete="off">
+        <small class="field-error" id="overrideFromError" style="display:none;color:#B3261E;">منطقة غير معروفة، يُرجى الاختيار من القائمة</small>
+      </div>
+      <div>
+        <label for="overrideToInput">إلى</label>
+        <input type="text" id="overrideToInput" list="areaDatalist" placeholder="اكتب أو اختر منطقة..." autocomplete="off">
+        <small class="field-error" id="overrideToError" style="display:none;color:#B3261E;">منطقة غير معروفة، يُرجى الاختيار من القائمة</small>
+      </div>
+    </div>
+    <div style="margin-top:14px;">
+      <label for="overridePriceInput">السعر المخصص (د.أ)</label>
+      <input type="number" id="overridePriceInput" step="0.25" min="0" placeholder="مثال: 2.50">
+      <small class="field-error" id="overridePriceError" style="display:none;color:#B3261E;">يُرجى إدخال سعر صحيح أكبر من صفر</small>
+    </div>
+    <button class="btn-secondary" id="saveOverrideBtn" style="width:100%;margin-top:14px;">حفظ السعر المخصص</button>
+    <div id="overrideSaveStatus" style="margin-top:8px;font-size:12.5px;color:var(--muted);text-align:center;"></div>
+  </div>
+
+  <div class="card">
+    <h2>الأسعار المخصصة الحالية <span class="tag" id="overridesStatusTag">--</span></h2>
+    <p class="note">أي مسار مدرج هنا يُستخدم سعره الثابت بدلاً من المعادلة، لكل أعضاء الفريق.</p>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>من</th><th>إلى</th><th>السعر المخصص (د.أ)</th><th>آخر تحديث</th><th>بواسطة</th><th>إجراء</th></tr>
+        </thead>
+        <tbody id="overridesTableBody">
+          <tr><td colspan="6" style="padding:24px;color:#6B7488;">جارٍ الاتصال...</td></tr>
         </tbody>
       </table>
     </div>
@@ -846,6 +914,23 @@ function haversine(lat1, lon1, lat2, lon2){
 let commissionMode = 'flat'; // 'flat' | 'percent'
 let lastQuote = null; // most recently computed quote, ready to save to the shared log
 
+// Custom per-route price overrides (shared, keyed by sorted area-name pair) —
+// when a route has an override, it replaces the formula-computed price
+// everywhere: the calculator, the full table, and price quotations.
+let priceOverrides = new Map();
+
+function overrideKey(nameA, nameB){
+  return [nameA, nameB].sort().join('|||');
+}
+
+function computePriceForPair(areaA, areaB, distKm){
+  const override = priceOverrides.get(overrideKey(areaA.name, areaB.name));
+  if(override){
+    return { price: override.price, rawPrice: override.price, jabr: 0, isOverride: true };
+  }
+  return computePrice(distKm);
+}
+
 function getParams(){
   return {
     base: parseFloat(document.getElementById('baseFare').value) || 0,
@@ -981,10 +1066,11 @@ function runCalc(){
   toInput.value = toA.name;
 
   const dist = computeDistance(fromA, toA);
-  const priceInfo = computePrice(dist);
+  const priceInfo = computePriceForPair(fromA, toA, dist);
   const price = priceInfo.price;
 
-  document.getElementById('priceOut').innerHTML = price.toFixed(2) + ' <span>دينار أردني</span>';
+  document.getElementById('priceOut').innerHTML = price.toFixed(2) + ' <span>دينار أردني</span>' +
+    (priceInfo.isOverride ? ' <span class="override-tag">سعر مخصص</span>' : '');
   document.getElementById('distOut').textContent = dist.toFixed(1);
   document.getElementById('fromAreaOut').textContent = fromA.name;
   document.getElementById('toAreaOut').textContent = toA.name;
@@ -1074,10 +1160,10 @@ function generateFullTable(){
       if(i===j) continue;
       const a = AREAS[i], b = AREAS[j];
       const dist = computeDistance(a,b);
-      const priceInfo = computePrice(dist);
+      const priceInfo = computePriceForPair(a, b, dist);
       const price = priceInfo.price;
       const split = computeSplit(price);
-      fullTableData.push({from:a.name, to:b.name, dist:dist, price:price, jabr:priceInfo.jabr, commission:split.commission, partner:split.partner});
+      fullTableData.push({from:a.name, to:b.name, dist:dist, price:price, jabr:priceInfo.jabr, isOverride:!!priceInfo.isOverride, commission:split.commission, partner:split.partner});
     }
   }
   document.getElementById('areaCountStat').textContent = AREAS.length;
@@ -1132,7 +1218,8 @@ function renderTable(rows){
   rows.forEach(r=>{
     const tr = document.createElement('tr');
     const jabrText = (r.jabr > 0 ? '+' : '') + r.jabr.toFixed(2);
-    tr.innerHTML = `<td>${r.from}</td><td>${r.to}</td><td>${r.dist.toFixed(1)}</td><td>${r.price.toFixed(2)}</td><td>${jabrText}</td><td>${r.commission.toFixed(2)}</td><td>${r.partner.toFixed(2)}</td>`;
+    const priceCell = r.price.toFixed(2) + (r.isOverride ? ' <span class="override-tag">مخصص</span>' : '');
+    tr.innerHTML = `<td>${r.from}</td><td>${r.to}</td><td>${r.dist.toFixed(1)}</td><td>${priceCell}</td><td>${jabrText}</td><td>${r.commission.toFixed(2)}</td><td>${r.partner.toFixed(2)}</td>`;
     frag.appendChild(tr);
   });
   body.innerHTML = '';
@@ -1241,6 +1328,95 @@ document.getElementById('downloadLogBtn').addEventListener('click', ()=>{
 });
 
 // ---------------------------------------------------------------
+// Custom per-route price overrides — UI side only. The actual
+// Firebase read/write lives in the module script below, mirroring
+// the shared pricing log pattern (window.santaraSaveOverride /
+// window.santaraDeleteOverride / window.santaraSetPriceOverrides).
+// ---------------------------------------------------------------
+function renderOverridesTable(){
+  const body = document.getElementById('overridesTableBody');
+  if(!body) return;
+  if(priceOverrides.size === 0){
+    body.innerHTML = '<tr><td colspan="6" style="padding:24px;color:#6B7488;">لا توجد أسعار مخصصة حالياً</td></tr>';
+    return;
+  }
+  const frag = document.createDocumentFragment();
+  priceOverrides.forEach((data, key) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${data.areaA}</td><td>${data.areaB}</td><td>${(data.price||0).toFixed(2)}</td><td>${formatTimestamp(data.updatedAt)}</td><td>${data.updatedBy||'--'}</td><td></td>`;
+    const delBtn = document.createElement('button');
+    delBtn.className = 'btn-danger-outline';
+    delBtn.textContent = 'حذف';
+    delBtn.addEventListener('click', async ()=>{
+      if(!window.santaraDeleteOverride){
+        alert('خدمة الحفظ المشترك غير جاهزة بعد');
+        return;
+      }
+      delBtn.disabled = true;
+      try{
+        await window.santaraDeleteOverride(key);
+      } catch(err){
+        alert('فشل الحذف: ' + err.message);
+        delBtn.disabled = false;
+      }
+    });
+    tr.lastElementChild.appendChild(delBtn);
+    frag.appendChild(tr);
+  });
+  body.innerHTML = '';
+  body.appendChild(frag);
+}
+
+window.santaraSetPriceOverrides = function(map){
+  priceOverrides = map;
+  renderOverridesTable();
+  const tag = document.getElementById('overridesStatusTag');
+  if(tag) tag.textContent = `متصل — ${map.size} مسار مخصص`;
+  // an override may change the price of the route currently on screen
+  if(document.getElementById('resultBox').classList.contains('show')) runCalc();
+};
+
+document.getElementById('saveOverrideBtn').addEventListener('click', async ()=>{
+  const fromInput = document.getElementById('overrideFromInput');
+  const toInput = document.getElementById('overrideToInput');
+  const priceInput = document.getElementById('overridePriceInput');
+  const statusEl = document.getElementById('overrideSaveStatus');
+
+  const fromA = resolveArea(fromInput.value);
+  const toA = resolveArea(toInput.value);
+  const price = parseFloat(priceInput.value);
+
+  setFieldValidity('overrideFromInput', 'overrideFromError', !!fromA);
+  setFieldValidity('overrideToInput', 'overrideToError', !!toA);
+  setFieldValidity('overridePriceInput', 'overridePriceError', !isNaN(price) && price > 0);
+  if(!fromA || !toA || isNaN(price) || price <= 0) return;
+
+  if(fromA.name === toA.name){
+    statusEl.textContent = 'يُرجى اختيار منطقتين مختلفتين';
+    return;
+  }
+  if(!window.santaraSaveOverride){
+    statusEl.textContent = 'خدمة الحفظ المشترك غير جاهزة بعد — يُرجى التحقق من الاتصال بالإنترنت والمحاولة مجدداً بعد لحظات';
+    return;
+  }
+  fromInput.value = fromA.name;
+  toInput.value = toA.name;
+
+  const btn = document.getElementById('saveOverrideBtn');
+  btn.disabled = true;
+  statusEl.textContent = 'جارٍ الحفظ...';
+  try{
+    await window.santaraSaveOverride(fromA.name, toA.name, price);
+    statusEl.textContent = 'تم حفظ السعر المخصص، وسيُستخدم فوراً في كل الحسابات لهذا المسار';
+    priceInput.value = '';
+  } catch(err){
+    statusEl.textContent = 'فشل الحفظ: ' + err.message;
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+// ---------------------------------------------------------------
 // Tab navigation
 // ---------------------------------------------------------------
 document.querySelectorAll('.tab-btn').forEach(btn=>{
@@ -1307,9 +1483,10 @@ document.getElementById('generateQuoteBtn').addEventListener('click', ()=>{
         frag.appendChild(zoneRow);
       }
       const dist = computeDistance(area, a);
-      const priceInfo = computePrice(dist);
+      const priceInfo = computePriceForPair(area, a, dist);
       const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${a.name}</td><td>${priceInfo.price.toFixed(2)}</td>`;
+      const priceCell = priceInfo.price.toFixed(2) + (priceInfo.isOverride ? ' <span class="override-tag">مخصص</span>' : '');
+      tr.innerHTML = `<td>${a.name}</td><td>${priceCell}</td>`;
       frag.appendChild(tr);
     });
     body.innerHTML = '';
@@ -1325,10 +1502,11 @@ document.getElementById('generateQuoteBtn').addEventListener('click', ()=>{
         if(i === j) continue;
         const a = AREAS[i], b = AREAS[j];
         const dist = computeDistance(a, b);
-        const priceInfo = computePrice(dist);
+        const priceInfo = computePriceForPair(a, b, dist);
         const split = computeSplit(priceInfo.price);
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${a.name}</td><td>${b.name}</td><td>${dist.toFixed(1)}</td><td>${priceInfo.price.toFixed(2)}</td><td>${split.commission.toFixed(2)}</td><td>${split.partner.toFixed(2)}</td>`;
+        const priceCell = priceInfo.price.toFixed(2) + (priceInfo.isOverride ? ' <span class="override-tag">مخصص</span>' : '');
+        tr.innerHTML = `<td>${a.name}</td><td>${b.name}</td><td>${dist.toFixed(1)}</td><td>${priceCell}</td><td>${split.commission.toFixed(2)}</td><td>${split.partner.toFixed(2)}</td>`;
         frag.appendChild(tr);
       }
     }
@@ -1387,7 +1565,7 @@ runCalc();
       getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut
     } = await import("https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js");
     const {
-      getFirestore, collection, addDoc, onSnapshot, query, orderBy, limit, serverTimestamp
+      getFirestore, collection, doc, setDoc, deleteDoc, addDoc, onSnapshot, query, orderBy, limit, serverTimestamp
     } = await import("https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js");
 
     const firebaseConfig = {
@@ -1403,7 +1581,9 @@ runCalc();
     const auth = getAuth(firebaseApp);
     const db = getFirestore(firebaseApp);
     const QUOTES_COLLECTION = "santara_quotes";
+    const OVERRIDES_COLLECTION = "santara_price_overrides";
     let unsubscribeLog = null;
+    let unsubscribeOverrides = null;
 
     function mapAuthError(code){
       const messages = {
@@ -1457,12 +1637,40 @@ runCalc();
       if (unsubscribeLog) { unsubscribeLog(); unsubscribeLog = null; }
     }
 
+    function startOverridesListener(){
+      if (unsubscribeOverrides) return;
+      unsubscribeOverrides = onSnapshot(collection(db, OVERRIDES_COLLECTION), (snapshot) => {
+        const map = new Map();
+        snapshot.docs.forEach(d => map.set(d.id, d.data()));
+        if (window.santaraSetPriceOverrides) window.santaraSetPriceOverrides(map);
+      }, (err) => {
+        const tag = document.getElementById('overridesStatusTag');
+        if (tag) tag.textContent = 'خطأ بالاتصال';
+      });
+    }
+    function stopOverridesListener(){
+      if (unsubscribeOverrides) { unsubscribeOverrides(); unsubscribeOverrides = null; }
+    }
+
     window.santaraFirebaseSave = async (quote) => {
       await addDoc(collection(db, QUOTES_COLLECTION), {
         ...quote,
         savedBy: auth.currentUser ? (auth.currentUser.email || auth.currentUser.uid) : null,
         timestamp: serverTimestamp(),
       });
+    };
+
+    window.santaraSaveOverride = async (areaA, areaB, price) => {
+      const key = [areaA, areaB].sort().join('|||');
+      await setDoc(doc(db, OVERRIDES_COLLECTION, key), {
+        areaA, areaB, price,
+        updatedBy: auth.currentUser ? (auth.currentUser.email || auth.currentUser.uid) : null,
+        updatedAt: serverTimestamp(),
+      });
+    };
+
+    window.santaraDeleteOverride = async (key) => {
+      await deleteDoc(doc(db, OVERRIDES_COLLECTION, key));
     };
 
     onAuthStateChanged(auth, (user) => {
@@ -1472,11 +1680,13 @@ runCalc();
         if (appContentEl()) appContentEl().style.display = 'block';
         if (currentUserLabel()) currentUserLabel().textContent = user.email || user.uid;
         startLogListener();
+        startOverridesListener();
       } else {
         if (loginScreenEl()) loginScreenEl().style.display = 'flex';
         if (loginFormEl()) loginFormEl().style.display = 'block';
         if (appContentEl()) appContentEl().style.display = 'none';
         stopLogListener();
+        stopOverridesListener();
         if (dbStatusTag()) dbStatusTag().textContent = '--';
       }
     });
